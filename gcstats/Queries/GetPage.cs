@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Queries
 {
-    public abstract class GetPageString
+    public abstract class GetPage
     {
         public class Request : IRequest<Result>
         {
