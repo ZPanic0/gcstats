@@ -19,7 +19,7 @@ namespace gcstats.Modules
                 }
 
                 return new SQLiteConnection(ConnectionString);
-            });
+            }).SingleInstance();
         }
     }
 }
