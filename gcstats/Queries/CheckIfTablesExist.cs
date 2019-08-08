@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
@@ -20,16 +19,16 @@ namespace gcstats.Queries
                             WHERE  type = 'table'
                                    AND NAME IN( 'Datacenter', 'Faction', 'Server', 'RawHtml' ));";
 
+            private readonly IDbConnection connection;
+
             public Handler(IDbConnection connection)
             {
-                Connection = connection;
+                this.connection = connection;
             }
-
-            public IDbConnection Connection { get; }
 
             public Task<bool> Handle(Request request, CancellationToken cancellationToken)
             {
-                return Connection.QueryFirstOrDefaultAsync<bool>(Sql);
+                return connection.QueryFirstOrDefaultAsync<bool>(Sql);
             }
         }
     }

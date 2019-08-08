@@ -12,21 +12,21 @@ namespace gcstats.Commands
 
         public class Handler : IRequestHandler<Request>
         {
+            private readonly IMediator mediator;
+
             public Handler(IMediator mediator)
             {
-                Mediator = mediator;
+                this.mediator = mediator;
             }
-
-            public IMediator Mediator { get; }
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                if (!await Mediator.Send(new CheckIfTablesExist.Request()))
+                if (!await mediator.Send(new CheckIfTablesExist.Request()))
                 {
                     Console.WriteLine("Tables missing or incomplete. Creating...");
-                    await Mediator.Send(new CreateDefaultTables.Request());
+                    await mediator.Send(new CreateDefaultTables.Request());
                     Console.WriteLine("Verifying...");
-                    if (await Mediator.Send(new CheckIfTablesExist.Request()))
+                    if (await mediator.Send(new CheckIfTablesExist.Request()))
                     {
                         Console.WriteLine("Tables created successfully.");
                     }

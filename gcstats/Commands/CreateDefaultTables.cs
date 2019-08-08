@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using MediatR;
-using System;
 using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,7 +74,7 @@ namespace gcstats.Commands
                 
                 INSERT INTO Server
                             (Name)
-                VALUES     ('Aegis'),
+                VALUES      ('Aegis'),
                             ('Atomos'),
                             ('Carbuncle'),
                             ('Garuda'),
@@ -146,19 +145,25 @@ namespace gcstats.Commands
                 
                 INSERT INTO Faction
                             (Name)
-                VALUES     ('Maelstrom'),
+                VALUES      ('Maelstrom'),
                             ('Order Of The Twin Adder'),
-                            ('Immortal Flames');";
+                            ('Immortal Flames');
+                
+                INSERT INTO TimePeriod
+                            (Name)
+                VALUES      ('Weekly'),
+                            ('Monthly')";
+
+            private readonly IDbConnection connection;
+
             public Handler(IDbConnection connection)
             {
-                Connection = connection;
+                this.connection = connection;
             }
-
-            public IDbConnection Connection { get; }
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                await Connection.ExecuteAsync(Sql);
+                await connection.ExecuteAsync(Sql);
 
                 return Unit.Value;
             }

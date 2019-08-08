@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using System.Net.Http;
 
 namespace gcstats.Modules
 {
@@ -13,6 +14,11 @@ namespace gcstats.Modules
 
             builder
                 .RegisterType<Application>()
+                .AsSelf()
+                .SingleInstance();
+
+            builder
+                .RegisterType<HttpClient>()
                 .AsSelf()
                 .SingleInstance();
         }
