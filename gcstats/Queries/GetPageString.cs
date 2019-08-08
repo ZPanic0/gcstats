@@ -47,6 +47,7 @@ namespace gcstats.Queries
                        AND FactionId = @FactionId
                        AND ServerId = @ServerId
                        AND DatacenterId = @DatacenterID
+                       AND Page = @Page
                 LIMIT  1";
 
             private readonly HttpClient client;
@@ -70,7 +71,8 @@ namespace gcstats.Queries
                     TimePeriodId = (int)request.TimePeriod,
                     FactionId = (int)request.Faction,
                     ServerId = (int)request.Server,
-                    DatacenterId = (int)request.Server.GetDatacenter()
+                    DatacenterId = (int)request.Server.GetDatacenter(),
+                    Page = request.Page
                 });
 
                 return new Result

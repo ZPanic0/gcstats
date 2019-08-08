@@ -40,13 +40,15 @@ namespace gcstats.Commands
                              FactionId,
                              ServerId,
                              DatacenterId,
-                             HtmlString)
+                             HtmlString,
+                             Page)
                 VALUES      (@TallyingPeriodId,
                              @TimePeriodId,
                              @FactionId,
                              @ServerId,
                              @DatacenterId,
-                             @HtmlString)";
+                             @HtmlString,
+                             @Page)";
 
             public Handler(IDbConnection connection)
             {
@@ -63,7 +65,8 @@ namespace gcstats.Commands
                     FactionId = (int)request.Faction,
                     ServerId = (int)request.Server,
                     DatacenterId = (int)request.Server.GetDatacenter(),
-                    HtmlString = request.HtmlString
+                    HtmlString = request.HtmlString,
+                    Page = request.Page
                 });
             }
         }

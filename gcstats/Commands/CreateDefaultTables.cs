@@ -55,6 +55,7 @@ namespace gcstats.Commands
                      FactionId        INTEGER NOT NULL,
                      ServerId         INTEGER NOT NULL,
                      DatacenterId     INTEGER NOT NULL,
+                     Page             INTEGER NOT NULL,
                      HtmlString       TEXT NOT NULL,
                      FOREIGN KEY(TimePeriodId) REFERENCES TimePeriod(Id),
                      FOREIGN KEY(FactionId) REFERENCES Faction(Id),
