@@ -14,13 +14,15 @@ namespace gcstats.Commands
         public class Handler : IRequestHandler<Request>
         {
             private const string Sql = @"
-                DROP TABLE IF EXISTS RawHtml;
-                
                 DROP TABLE IF EXISTS Faction;
                 
                 DROP TABLE IF EXISTS Server;
                 
                 DROP TABLE IF EXISTS Datacenter;
+                
+                DROP TABLE IF EXISTS TimePeriod;
+                
+                DROP TABLE IF EXISTS RawHtml;
                 
                 CREATE TABLE Faction
                   (
@@ -40,13 +42,21 @@ namespace gcstats.Commands
                      NAME TEXT NOT NULL
                   );
                 
+                CREATE TABLE TimePeriod
+                  (
+                     Id   INTEGER PRIMARY KEY,
+                     Name STRING NOT NULL
+                  );
+                
                 CREATE TABLE RawHtml
                   (
                      Id           INTEGER PRIMARY KEY,
+                     TimePeriodId INTEGER NOT NULL,
                      FactionId    INTEGER NOT NULL,
                      ServerId     INTEGER NOT NULL,
                      DatacenterId INTEGER NOT NULL,
                      HtmlString   TEXT NOT NULL,
+                     FOREIGN KEY(TimePeriodId) REFERENCES TimePeriod(Id),
                      FOREIGN KEY(FactionId) REFERENCES Faction(Id),
                      FOREIGN KEY(ServerId) REFERENCES Server(Id),
                      FOREIGN KEY(DatacenterId) REFERENCES Datacenter(Id)
@@ -65,7 +75,7 @@ namespace gcstats.Commands
                 
                 INSERT INTO Server
                             (Name)
-                VALUES('Aegis'),
+                VALUES     ('Aegis'),
                             ('Atomos'),
                             ('Carbuncle'),
                             ('Garuda'),
@@ -136,7 +146,7 @@ namespace gcstats.Commands
                 
                 INSERT INTO Faction
                             (Name)
-                VALUES('Maelstrom'),
+                VALUES     ('Maelstrom'),
                             ('Order Of The Twin Adder'),
                             ('Immortal Flames');";
             public Handler(IDbConnection connection)
