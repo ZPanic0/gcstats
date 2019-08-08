@@ -12,7 +12,7 @@ namespace gcstats.Queries
 
         public class Handler : IRequestHandler<Request, bool>
         {
-            private const string Sql = @"
+            private const string sql = @"
                 SELECT 1
                 WHERE  4 = (SELECT Count(*)
                             FROM   sqlite_master
@@ -28,7 +28,7 @@ namespace gcstats.Queries
 
             public Task<bool> Handle(Request request, CancellationToken cancellationToken)
             {
-                return connection.QueryFirstOrDefaultAsync<bool>(Sql);
+                return connection.QueryFirstOrDefaultAsync<bool>(sql);
             }
         }
     }

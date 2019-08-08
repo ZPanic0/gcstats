@@ -39,10 +39,11 @@ namespace gcstats.Queries
 
         public class Handler : IRequestHandler<Request, Result>
         {
-            private const string Sql = @"
+            private const string sql = @"
                 SELECT HtmlString
                 FROM   RawHtml
-                WHERE  TimePeriodId = @TimePeriodId
+                WHERE  TallyingPeriodId = @TallyingPeriodId
+                       AND TimePeriodId = @TimePeriodId
                        AND FactionId = @FactionId
                        AND ServerId = @ServerId
                        AND DatacenterId = @DatacenterID
@@ -63,8 +64,9 @@ namespace gcstats.Queries
             {
                 ValidateInput(request);
 
-                var result = await connection.QueryFirstOrDefaultAsync<string>(Sql, new
+                var result = await connection.QuerySingleOrDefaultAsync<string>(sql, new
                 {
+                    TallyingPeriodId = request.TallyingPeriodId,
                     TimePeriodId = (int)request.TimePeriod,
                     FactionId = (int)request.Faction,
                     ServerId = (int)request.Server,
@@ -73,7 +75,7 @@ namespace gcstats.Queries
 
                 return new Result
                 {
-                    RetrievedFromCache = result == null,
+                    RetrievedFromCache = result != null,
                     HtmlString = result ?? await client.GetStringAsync(
                         string.Format(
                             appSettings.LodestoneUrlTemplate,

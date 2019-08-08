@@ -12,7 +12,7 @@ namespace gcstats.Commands
 
         public class Handler : IRequestHandler<Request>
         {
-            private const string Sql = @"
+            private const string sql = @"
                 DROP TABLE IF EXISTS Faction;
                 
                 DROP TABLE IF EXISTS Server;
@@ -49,12 +49,13 @@ namespace gcstats.Commands
                 
                 CREATE TABLE RawHtml
                   (
-                     Id           INTEGER PRIMARY KEY,
-                     TimePeriodId INTEGER NOT NULL,
-                     FactionId    INTEGER NOT NULL,
-                     ServerId     INTEGER NOT NULL,
-                     DatacenterId INTEGER NOT NULL,
-                     HtmlString   TEXT NOT NULL,
+                     Id               INTEGER PRIMARY KEY,
+                     TallyingPeriodId INTEGER NOT NULL,
+                     TimePeriodId     INTEGER NOT NULL,
+                     FactionId        INTEGER NOT NULL,
+                     ServerId         INTEGER NOT NULL,
+                     DatacenterId     INTEGER NOT NULL,
+                     HtmlString       TEXT NOT NULL,
                      FOREIGN KEY(TimePeriodId) REFERENCES TimePeriod(Id),
                      FOREIGN KEY(FactionId) REFERENCES Faction(Id),
                      FOREIGN KEY(ServerId) REFERENCES Server(Id),
@@ -163,7 +164,7 @@ namespace gcstats.Commands
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                await connection.ExecuteAsync(Sql);
+                await connection.ExecuteAsync(sql);
 
                 return Unit.Value;
             }
