@@ -1,6 +1,7 @@
 ﻿using gcstats.Queries;
 using MediatR;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,22 +22,61 @@ namespace gcstats.Commands
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                if (!await mediator.Send(new CheckIfTablesExist.Request()))
+                var missingTables = await mediator.Send(new CheckIfTablesExist.Request());
+
+                if (missingTables.Any())
                 {
-                    Console.WriteLine("Tables missing or incomplete. Creating...");
-                    await mediator.Send(new CreateDefaultTables.Request());
-                    Console.WriteLine("Verifying...");
-                    if (await mediator.Send(new CheckIfTablesExist.Request()))
+                    Console.WriteLine("Tables missing or incomplete.");
+
+                    foreach (var missingTableName in missingTables)
                     {
-                        Console.WriteLine("Tables created successfully.");
+                        Console.WriteLine($"Regenerating {missingTableName}...");
+
+                        await mediator.Send(GetCommand(missingTableName));
                     }
-                    else
-                    {
-                        throw new Exception("Failed to create database tables");
-                    }
+
+                    await VerifyTables();
                 }
 
                 return Unit.Value;
+            }
+
+            private IRequest GetCommand(string tableName)
+            {
+                switch (tableName)
+                {
+                    case "Faction":
+                        return new RegenerateFactionTable.Request();
+
+                    case "Server":
+                        return new RegenerateServerTable.Request();
+
+                    case "Datacenter":
+                        return new RegenerateDatacenterTable.Request();
+
+                    case "TimePeriod":
+                        return new RegenerateTimePeriodTable.Request();
+
+                    case "RawHtml":
+                        return new RegenerateRawHtmlTable.Request();
+
+                    default:
+                        throw new ArgumentException($"Behavior for table name not defined: {tableName}");
+                }
+            }
+
+            private async Task VerifyTables()
+            {
+                Console.WriteLine("Verifying...");
+
+                if ((await mediator.Send(new CheckIfTablesExist.Request())).Any())
+                {
+                    throw new Exception("Failed to create one or more database tables.");
+                }
+                else
+                {
+                    Console.WriteLine("Tables created successfully.");
+                }
             }
         }
     }
