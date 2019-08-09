@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Commands
 {
-    public abstract class RegenerateRawHtmlTable
+    public static class RegenerateRawHtmlTable
     {
         public class Request : IRequest { }
 

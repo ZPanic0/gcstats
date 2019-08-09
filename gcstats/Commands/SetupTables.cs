@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Commands
 {
-    public abstract class SetupTables
+    public static class SetupTables
     {
         public class Request : IRequest { }
 

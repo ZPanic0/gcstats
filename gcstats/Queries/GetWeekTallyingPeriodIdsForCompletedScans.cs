@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Queries
 {
-    public abstract class GetWeekTallyingPeriodIdsForCompletedScans
+    public static class GetWeekTallyingPeriodIdsForCompletedScans
     {
         public class Request : IRequest<IEnumerable<int>> { }
 

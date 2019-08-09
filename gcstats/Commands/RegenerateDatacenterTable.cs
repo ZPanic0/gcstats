@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Commands
 {
-    public abstract class RegenerateDatacenterTable
+    public static class RegenerateDatacenterTable
     {
         public class Request : IRequest { }
 

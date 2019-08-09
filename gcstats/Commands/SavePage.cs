@@ -8,7 +8,7 @@ using MediatR;
 
 namespace gcstats.Commands
 {
-    public abstract class SavePage
+    public static class SavePage
     {
         public class Request : IRequest<int>
         {

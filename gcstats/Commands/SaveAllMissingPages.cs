@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Commands
 {
-    public abstract class SaveAllMissingPages
+    public static class SaveAllMissingPages
     {
         public class Request : IRequest
         {

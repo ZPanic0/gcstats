@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Commands
 {
-    public abstract class RegenerateTimePeriodTable
+    public static class RegenerateTimePeriodTable
     {
         public class Request : IRequest { }
 

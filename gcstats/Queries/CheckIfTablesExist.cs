@@ -7,7 +7,7 @@ using MediatR;
 
 namespace gcstats.Queries
 {
-    public abstract class CheckIfTablesExist
+    public static class CheckIfTablesExist
     {
         public class Request : IRequest<IEnumerable<string>> { }
 
