@@ -23,6 +23,7 @@ namespace gcstats.Commands
                   DatacenterId INTEGER NOT NULL,
                   Page INTEGER NOT NULL,
                   HtmlString TEXT NOT NULL,
+                  IndexId INTEGER NOT NULL,
                   FOREIGN KEY(TimePeriodId) REFERENCES TimePeriod(Id),
                   FOREIGN KEY(FactionId) REFERENCES Faction(Id),
                   FOREIGN KEY(ServerId) REFERENCES Server(Id),

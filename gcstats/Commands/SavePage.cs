@@ -1,10 +1,11 @@
-﻿using System.Data;
-using System.Threading;
-using System.Threading.Tasks;
-using Dapper;
+﻿using Dapper;
 using gcstats.Common;
 using gcstats.Common.Extensions;
 using MediatR;
+using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
+using gcstats.Queries;
 
 namespace gcstats.Commands
 {
@@ -33,6 +34,8 @@ namespace gcstats.Commands
         public class Handler : IRequestHandler<Request, int>
         {
             private readonly IDbConnection connection;
+            private readonly IMediator mediator;
+
             private const string sql = @"
                 INSERT INTO RawHtml
                             (TallyingPeriodId,
@@ -41,24 +44,26 @@ namespace gcstats.Commands
                              ServerId,
                              DatacenterId,
                              HtmlString,
-                             Page)
+                             Page,
+                             IndexId)
                 VALUES      (@TallyingPeriodId,
                              @TimePeriodId,
                              @FactionId,
                              @ServerId,
                              @DatacenterId,
                              @HtmlString,
-                             @Page)";
+                             @Page,
+                             @IndexId)";
 
-            public Handler(IDbConnection connection)
+            public Handler(IDbConnection connection, IMediator mediator)
             {
                 this.connection = connection;
+                this.mediator = mediator;
             }
 
-            public Task<int> Handle(Request request, CancellationToken cancellationToken)
+            public async Task<int> Handle(Request request, CancellationToken cancellationToken)
             {
-
-                return connection.ExecuteAsync(sql, new
+                return await connection.ExecuteAsync(sql, new
                 {
                     TallyingPeriodId = request.TallyingPeriodId,
                     TimePeriodId = (int)request.TimePeriod,
@@ -66,7 +71,13 @@ namespace gcstats.Commands
                     ServerId = (int)request.Server,
                     DatacenterId = (int)request.Server.GetDatacenter(),
                     HtmlString = request.HtmlString,
-                    Page = request.Page
+                    Page = request.Page,
+                    IndexId = await mediator.Send(new GetIndexFromQueryData.Request(
+                        request.TallyingPeriodId,
+                        request.TimePeriod,
+                        request.Server,
+                        request.Faction,
+                        request.Page))
                 });
             }
         }
