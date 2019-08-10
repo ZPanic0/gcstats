@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using MediatR;
 using System.Data;
 using System.Threading;
@@ -8,9 +8,9 @@ namespace gcstats.Commands
 {
     public static class RegenerateRawHtmlTable
     {
-        public class Request : IRequest { }
+        public class Request : IRequest<int> { }
 
-        public class Handler : IRequestHandler<Request>
+        public class Handler : IRequestHandler<Request, int>
         {
             private const string sql = @"
                 DROP TABLE IF EXISTS RawHtml;
@@ -35,11 +35,9 @@ namespace gcstats.Commands
                 this.connection = connection;
             }
 
-            public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
+            public Task<int> Handle(Request request, CancellationToken cancellationToken)
             {
-                await connection.ExecuteAsync(sql);
-
-                return Unit.Value;
+                return connection.ExecuteAsync(sql);
             }
         }
     }
