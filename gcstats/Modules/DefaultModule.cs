@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using System.Net.Http;
 
 namespace gcstats.Modules
 {
@@ -12,6 +11,7 @@ namespace gcstats.Modules
             builder.RegisterModule<HtmlParserModule>();
             builder.RegisterModule<SQLiteModule>();
             builder.RegisterModule<HttpClientModule>();
+            builder.RegisterModule<AutoMapperModule>();
 
             builder
                 .RegisterType<Application>()
