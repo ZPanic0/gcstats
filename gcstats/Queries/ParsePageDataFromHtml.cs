@@ -29,7 +29,6 @@ namespace gcstats.Queries
             public string PortraitUrl { get; set; }
             public string PlayerName { get; set; }
             public Server Server { get; set; }
-            public Datacenter Datacenter { get; set; }
             public Faction Faction { get; set; }
             public FactionRank FactionRank { get; set; }
             public int CompanySeals { get; set; }
@@ -71,8 +70,7 @@ namespace gcstats.Queries
                         PortraitUrl = row.SelectSingleNode(appSettings.Paths.PortraitUrl).Attributes["src"].Value,
                         PlayerName = row.SelectSingleNode(appSettings.Paths.PlayerName).InnerText,
                         Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
-                        Datacenter = Enum.Parse<Datacenter>(serverAndDatacenterMatch.Last().Value),
-                        Faction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value),
+                        Faction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value.Replace(" ", string.Empty)),
                         FactionRank = Enum.Parse<FactionRank>(factionAndRankNameMatch.Last().Value.Replace(" ", string.Empty)),
                         CompanySeals = int.Parse(row.SelectSingleNode(appSettings.Paths.CompanySeals).InnerText),
                         LodestoneId = int.Parse(Regex.Match(row.Attributes["data-href"].Value, "[0-9]+").Value)

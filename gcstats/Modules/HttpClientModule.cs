@@ -32,8 +32,6 @@ namespace gcstats.Modules
                         }
                     },
                     true)));
-
-            proxyDetails = null;
         }
         protected override void Load(ContainerBuilder builder)
         {

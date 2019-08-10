@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using MediatR;
 using System.Data;
 using System.Threading;
@@ -20,14 +20,12 @@ namespace gcstats.Commands
                   TimePeriodId INTEGER NOT NULL,
                   FactionId INTEGER NOT NULL,
                   ServerId INTEGER NOT NULL,
-                  DatacenterId INTEGER NOT NULL,
                   Page INTEGER NOT NULL,
                   HtmlString TEXT NOT NULL,
                   IndexId INTEGER NOT NULL,
                   FOREIGN KEY(TimePeriodId) REFERENCES TimePeriod(Id),
                   FOREIGN KEY(FactionId) REFERENCES Faction(Id),
-                  FOREIGN KEY(ServerId) REFERENCES Server(Id),
-                  FOREIGN KEY(DatacenterId) REFERENCES Datacenter(Id)
+                  FOREIGN KEY(ServerId) REFERENCES Server(Id)
                 );";
 
             private readonly IDbConnection connection;

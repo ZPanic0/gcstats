@@ -46,7 +46,7 @@ namespace gcstats.Queries
                        AND TimePeriodId = @TimePeriodId
                        AND FactionId = @FactionId
                        AND ServerId = @ServerId
-                       AND DatacenterId = @DatacenterID
+                       AND DatacenterId = @DatacenterId
                        AND Page = @Page
                 LIMIT  1";
 
@@ -85,8 +85,7 @@ namespace gcstats.Queries
                             request.TallyingPeriodId,
                             request.Page,
                             (int)request.Faction,
-                            request.Server,
-                            request.Server.GetDatacenter().ToString()))
+                            request.Server))
                 };
             }
 

@@ -42,7 +42,6 @@ namespace gcstats.Commands
                              TimePeriodId,
                              FactionId,
                              ServerId,
-                             DatacenterId,
                              HtmlString,
                              Page,
                              IndexId)
@@ -50,7 +49,6 @@ namespace gcstats.Commands
                              @TimePeriodId,
                              @FactionId,
                              @ServerId,
-                             @DatacenterId,
                              @HtmlString,
                              @Page,
                              @IndexId)";
@@ -69,7 +67,6 @@ namespace gcstats.Commands
                     TimePeriodId = (int)request.TimePeriod,
                     FactionId = (int)request.Faction,
                     ServerId = (int)request.Server,
-                    DatacenterId = (int)request.Server.GetDatacenter(),
                     HtmlString = request.HtmlString,
                     Page = request.Page,
                     IndexId = await mediator.Send(new GetIndexFromQueryData.Request(

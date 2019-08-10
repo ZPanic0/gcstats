@@ -5,7 +5,7 @@
         NoInput = 0,
 
         Maelstrom = 1,
-        OrderOfTheTwinAdder = 2,
+        OrderoftheTwinAdder = 2,
         ImmortalFlames = 3
     }
 }
