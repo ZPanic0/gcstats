@@ -8,10 +8,10 @@ namespace gcstats.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            var config = new MapperConfiguration(cfg => cfg.CreateMap<ParsePlayerDataFromHtml.Result, >)
-            builder
-                .RegisterType<Mapper>()
-                .As<IMapper>();
+            //var config = new MapperConfiguration(cfg => cfg.CreateMap<ParsePlayerDataFromHtml.Result, >)
+            //builder
+            //    .RegisterType<Mapper>()
+            //    .As<IMapper>();
         }
     }
 }
