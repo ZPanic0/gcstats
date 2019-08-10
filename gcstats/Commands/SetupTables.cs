@@ -41,7 +41,7 @@ namespace gcstats.Commands
                 return Unit.Value;
             }
 
-            private IRequest GetCommand(string tableName)
+            private IRequest<int> GetCommand(string tableName)
             {
                 switch (tableName)
                 {

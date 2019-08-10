@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Queries
 {
-    public static class ParsePageDataFromHtml
+    public static class ParsePlayerDataFromHtml
     {
         public class Request : IRequest<Result[]>
         {
