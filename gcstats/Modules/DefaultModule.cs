@@ -11,14 +11,10 @@ namespace gcstats.Modules
             builder.RegisterModule<MediatRModule>();
             builder.RegisterModule<HtmlParserModule>();
             builder.RegisterModule<SQLiteModule>();
+            builder.RegisterModule<HttpClientModule>();
 
             builder
                 .RegisterType<Application>()
-                .AsSelf()
-                .SingleInstance();
-
-            builder
-                .RegisterType<HttpClient>()
                 .AsSelf()
                 .SingleInstance();
         }
