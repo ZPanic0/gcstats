@@ -31,7 +31,7 @@ namespace gcstats.Modules
                             Credentials = new NetworkCredential(x.UserName, x.Password)
                         }
                     },
-                    true)));
+                    true)).ToArray());
         }
         protected override void Load(ContainerBuilder builder)
         {
@@ -39,6 +39,12 @@ namespace gcstats.Modules
                 .Register(context =>
                     {
                         var client = clientQueue.Dequeue();
+
+                        while (client == null)
+                        {
+                            client = clientQueue.Dequeue();
+                        }
+
                         clientQueue.Enqueue(client);
                         return client;
                     })

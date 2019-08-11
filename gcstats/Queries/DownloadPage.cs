@@ -26,31 +26,50 @@ namespace gcstats.Queries
             public Server Server { get; }
             public Faction Faction { get; }
             public int Page { get; }
+            public int Delay { get; set; } = 1000;
         }
 
         public class Handler : IRequestHandler<Request, string>
         {
             private readonly HttpClient client;
             private readonly AppSettings appSettings;
+            private readonly IMediator mediator;
 
-            public Handler(HttpClient client, AppSettings appSettings)
+            public Handler(HttpClient client, AppSettings appSettings, IMediator mediator)
             {
                 this.client = client;
                 this.appSettings = appSettings;
+                this.mediator = mediator;
             }
 
-            public Task<string> Handle(Request request, CancellationToken cancellationToken)
+            public async Task<string> Handle(Request request, CancellationToken cancellationToken)
             {
                 ValidateInput(request);
 
-                return client.GetStringAsync(
-                        string.Format(
-                            appSettings.LodestoneUrlTemplate,
-                            request.TimePeriod.ToString().ToLower(),
+                HttpResponseMessage response = await Get(request);
+                long index = default;
+                while (!response.IsSuccessStatusCode)
+                {
+                    index = index == default
+                        ? await mediator.Send(new GetIndexFromQueryData.Request(
                             request.TallyingPeriodId,
-                            request.Page,
-                            (int)request.Faction,
-                            request.Server));
+                            request.TimePeriod,
+                            request.Server,
+                            request.Faction,
+                            request.Page))
+                        : index;
+
+                    Console.WriteLine($"Response for index {index} failed with status code {response.StatusCode}. Retrying...");
+
+                    response.Dispose();
+                    await Task.Delay(request.Delay);
+                    response = await Get(request);
+                }
+
+                var result = await response.Content.ReadAsStringAsync();
+                response.Dispose();
+
+                return result;
             }
 
             private void ValidateInput(Request request)
@@ -88,6 +107,17 @@ namespace gcstats.Queries
                 }
             }
 
+            private Task<HttpResponseMessage> Get(Request request)
+            {
+                return client.GetAsync(
+                    string.Format(
+                        appSettings.LodestoneUrlTemplate,
+                        request.TimePeriod.ToString().ToLower(),
+                        request.TallyingPeriodId,
+                        request.Page,
+                        (int)request.Faction,
+                        request.Server));
+            }
         }
     }
 }

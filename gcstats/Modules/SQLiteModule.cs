@@ -11,15 +11,19 @@ namespace gcstats.Modules
         private static readonly string ConnectionString = $"Data Source={FileName};Version=3";
         protected override void Load(ContainerBuilder builder)
         {
-            builder.Register<IDbConnection>(context =>
-            {
-                if (!File.Exists(FileName))
+            builder
+                .Register(context =>
                 {
-                    SQLiteConnection.CreateFile(FileName);
-                }
+                    if (!File.Exists(FileName))
+                    {
+                        SQLiteConnection.CreateFile(FileName);
+                    }
 
-                return new SQLiteConnection(ConnectionString);
-            }).SingleInstance();
+                    return new SQLiteConnection(ConnectionString);
+                })
+                .AsSelf()
+                .As<IDbConnection>()
+                .SingleInstance();
         }
     }
 }
