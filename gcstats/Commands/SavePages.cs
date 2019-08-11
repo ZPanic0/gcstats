@@ -17,23 +17,6 @@ namespace gcstats.Commands
 
         public class Handler : IRequestHandler<Request>
         {
-            private const string sql = @"
-                INSERT INTO RawHtml
-                            (TallyingPeriodId,
-                             TimePeriodId,
-                             FactionId,
-                             ServerId,
-                             HtmlString,
-                             Page,
-                             IndexId)
-                VALUES      (@TallyingPeriodId,
-                             @TimePeriodId,
-                             @FactionId,
-                             @ServerId,
-                             @HtmlString,
-                             @Page,
-                             @IndexId)";
-
             private readonly IDbConnection connection;
             private readonly IMediator mediator;
 
@@ -49,21 +32,7 @@ namespace gcstats.Commands
                 {
                     foreach (var pageRequest in request.Pages)
                     {
-                        await connection.ExecuteAsync(sql, new
-                        {
-                            TallyingPeriodId = pageRequest.TallyingPeriodId,
-                            TimePeriodId = (int)pageRequest.TimePeriod,
-                            FactionId = (int)pageRequest.Faction,
-                            ServerId = (int)pageRequest.Server,
-                            HtmlString = pageRequest.HtmlString,
-                            Page = pageRequest.Page,
-                            IndexId = await mediator.Send(new GetIndexFromQueryData.Request(
-                        pageRequest.TallyingPeriodId,
-                        pageRequest.TimePeriod,
-                        pageRequest.Server,
-                        pageRequest.Faction,
-                        pageRequest.Page))
-                        });
+                        await mediator.Send(pageRequest);
                     }
 
                     transaction.Commit();
