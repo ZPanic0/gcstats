@@ -2,6 +2,7 @@
 {
     public class Paths
     {
+        public string Table { get; set; }
         public string Page { get; set; }
         public string TallyingPeriod { get; set; }
         public string BasePath { get; set; }
