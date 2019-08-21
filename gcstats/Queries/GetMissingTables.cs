@@ -7,7 +7,7 @@ using MediatR;
 
 namespace gcstats.Queries
 {
-    public static class CheckIfTablesExist
+    public static class GetMissingTables
     {
         public class Request : IRequest<IEnumerable<string>> { }
 
@@ -23,7 +23,9 @@ namespace gcstats.Queries
                   ('Server', 1),
                   ('Datacenter', 1),
                   ('TimePeriod', 1),
-                  ('RawHtml', 2);
+                  ('Player', 1),
+                  ('RawHtml', 2),
+                  ('Performance', 2);
                 SELECT
                   TN.Name,
                   TN.Weight

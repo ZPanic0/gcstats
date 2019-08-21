@@ -22,7 +22,7 @@ namespace gcstats.Commands
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                var missingTables = await mediator.Send(new CheckIfTablesExist.Request());
+                var missingTables = await mediator.Send(new GetMissingTables.Request());
 
                 if (missingTables.Any())
                 {
@@ -57,8 +57,14 @@ namespace gcstats.Commands
                     case "TimePeriod":
                         return new RegenerateTimePeriodTable.Request();
 
+                    case "Player":
+                        return new RegeneratePlayerTable.Request();
+
                     case "RawHtml":
                         return new RegenerateRawHtmlTable.Request();
+
+                    case "Performance":
+                        return new RegeneratePerformanceTable.Request();
 
                     default:
                         throw new ArgumentException($"Behavior for table name not defined: {tableName}");
@@ -69,7 +75,7 @@ namespace gcstats.Commands
             {
                 Console.WriteLine("Verifying...");
 
-                if ((await mediator.Send(new CheckIfTablesExist.Request())).Any())
+                if ((await mediator.Send(new GetMissingTables.Request())).Any())
                 {
                     throw new Exception("Failed to create one or more database tables.");
                 }
