@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 namespace gcstats.Commands
 {
-    public static class SavePages
+    public static class UpsertPlayers
     {
         public class Request : IRequest
         {
-            public IEnumerable<SavePage.Request> Pages { get; set; }
+            public Request(IEnumerable<UpsertPlayer.Request> requests)
+            {
+                Requests = requests;
+            }
+
+            public IEnumerable<UpsertPlayer.Request> Requests { get; }
         }
 
         public class Handler : IRequestHandler<Request>
@@ -28,9 +33,9 @@ namespace gcstats.Commands
                 connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
-                    foreach (var pageRequest in request.Pages)
+                    foreach (var playerRequest in request.Requests)
                     {
-                        await mediator.Send(pageRequest);
+                        await mediator.Send(playerRequest);
                     }
 
                     transaction.Commit();

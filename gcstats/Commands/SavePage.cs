@@ -12,7 +12,7 @@ namespace gcstats.Commands
     {
         public class Request : IRequest<int>
         {
-            public Request(int tallyingPeriodId, TimePeriod timePeriod, Server server, Faction faction, int page, string htmlString, bool applyTrim = true)
+            public Request(int tallyingPeriodId, TimePeriod timePeriod, Server server, Faction faction, int page, string htmlString)
             {
                 TallyingPeriodId = tallyingPeriodId;
                 TimePeriod = timePeriod;
@@ -20,7 +20,6 @@ namespace gcstats.Commands
                 Faction = faction;
                 Page = page;
                 HtmlString = htmlString;
-                ApplyTrim = applyTrim;
             }
 
             public int TallyingPeriodId { get; }
@@ -29,7 +28,6 @@ namespace gcstats.Commands
             public Faction Faction { get; }
             public int Page { get; }
             public string HtmlString { get; }
-            public bool ApplyTrim { get; }
         }
 
         public class Handler : IRequestHandler<Request, int>
@@ -68,9 +66,7 @@ namespace gcstats.Commands
                     TimePeriodId = (int)request.TimePeriod,
                     FactionId = (int)request.Faction,
                     ServerId = (int)request.Server,
-                    HtmlString = request.ApplyTrim
-                        ? await mediator.Send(new TrimPageData.Request(request.HtmlString))
-                        : request.HtmlString,
+                    HtmlString = request.HtmlString,
                     Page = request.Page,
                     IndexId = await mediator.Send(new GetIndexFromQueryData.Request(
                         request.TallyingPeriodId,
