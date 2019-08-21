@@ -9,7 +9,7 @@ namespace gcstats.Commands
 {
     public static class UpsertPlayer
     {
-        public class Request : IRequest
+        public class Request : IRequest<int>
         {
             public Request(int lodestoneId, string playerName, string portraitUrl, Faction faction, FactionRank factionRank, Server server)
             {
@@ -28,7 +28,7 @@ namespace gcstats.Commands
             public Server Server { get; }
         }
 
-        public class Handler : IRequestHandler<Request>
+        public class Handler : IRequestHandler<Request, int>
         {
             private const string sql = @"
                 REPLACE INTO Player (
@@ -55,11 +55,9 @@ namespace gcstats.Commands
             {
                 this.connection = connection;
             }
-            public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
+            public Task<int> Handle(Request request, CancellationToken cancellationToken)
             {
-                await connection.ExecuteAsync(sql, request);
-
-                return Unit.Value;
+                return connection.ExecuteAsync(sql, request);
             }
         }
     }
