@@ -46,30 +46,14 @@ namespace gcstats.Queries
             {
                 ValidateInput(request);
 
-                HttpResponseMessage response = await Get(request);
-                long index = default;
-                while (!response.IsSuccessStatusCode)
+                var result = await Get(request);
+                while (!result.Item2)
                 {
-                    index = index == default
-                        ? await mediator.Send(new GetIndexFromQueryData.Request(
-                            request.TallyingPeriodId,
-                            request.TimePeriod,
-                            request.Server,
-                            request.Faction,
-                            request.Page))
-                        : index;
-
-                    Console.WriteLine($"Response for index {index} failed with status code {response.StatusCode}. Retrying...");
-
-                    response.Dispose();
-                    await Task.Delay(request.Delay);
-                    response = await Get(request);
+                    Task.Delay(request.Delay).Wait();
+                    result = await Get(request);
                 }
 
-                var result = await response.Content.ReadAsStringAsync();
-                response.Dispose();
-
-                return result;
+                return result.Item1;
             }
 
             private void ValidateInput(Request request)
@@ -107,16 +91,50 @@ namespace gcstats.Queries
                 }
             }
 
-            private Task<HttpResponseMessage> Get(Request request)
+            private async Task<Tuple<string, bool>> Get(Request request)
             {
-                return client.GetAsync(
-                    string.Format(
-                        appSettings.LodestoneUrlTemplate,
-                        request.TimePeriod.ToString().ToLower(),
-                        request.TallyingPeriodId,
-                        request.Page,
-                        (int)request.Faction,
-                        request.Server));
+                long index = default;
+                try
+                {
+                    using (var response = await client.GetAsync(
+                        string.Format(
+                            appSettings.LodestoneUrlTemplate,
+                            request.TimePeriod.ToString().ToLower(),
+                            request.TallyingPeriodId,
+                            request.Page,
+                            (int)request.Faction,
+                            request.Server)))
+                    {
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            index = index == default
+                                ? await mediator.Send(new GetIndexFromQueryData.Request(
+                                    request.TallyingPeriodId,
+                                    request.TimePeriod,
+                                    request.Server,
+                                    request.Faction,
+                                    request.Page))
+                                : index;
+                            Console.WriteLine($"Response for index {index} failed with status code {response.StatusCode}. Retrying...");
+                            return new Tuple<string, bool>(string.Empty, false);
+                        }
+
+                        return new Tuple<string, bool>(await response.Content.ReadAsStringAsync(), true);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    index = index == default
+                        ? await mediator.Send(new GetIndexFromQueryData.Request(
+                            request.TallyingPeriodId,
+                            request.TimePeriod,
+                            request.Server,
+                            request.Faction,
+                            request.Page))
+                        : index;
+                    Console.WriteLine($"Exception thrown in {nameof(GetIndexFromQueryData)}.\nMessage: {ex.Message}\nRetrying...");
+                    return new Tuple<string, bool>(string.Empty, false);
+                }
             }
         }
     }
