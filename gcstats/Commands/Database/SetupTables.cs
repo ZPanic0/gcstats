@@ -1,4 +1,4 @@
-﻿using gcstats.Queries;
+﻿using gcstats.Queries.Database;
 using MediatR;
 using System;
 using System.Linq;
