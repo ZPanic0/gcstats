@@ -18,8 +18,10 @@ namespace gcstats.Commands
                   LodestoneId INTEGER NOT NULL,
                   Rank INTEGER NOT NULL,
                   Score INTEGER NOT NULL,
+                  FactionId INTEGER NOT NULL,
                   IndexId INTEGER NOT NULL,
-                  FOREIGN KEY(LodestoneId) REFERENCES Player(LodestoneId)
+                  FOREIGN KEY(LodestoneId) REFERENCES Player(LodestoneId),
+                  FOREIGN KEY(FactionId) REFERENCES Faction(Id)
                 );";
 
             private readonly IDbConnection connection;

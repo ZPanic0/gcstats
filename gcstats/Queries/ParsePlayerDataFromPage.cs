@@ -15,11 +15,13 @@ namespace gcstats.Queries
     {
         public class Request : IRequest<Result[]>
         {
-            public Request(string pageHtml)
+            public Request(Faction targetFaction, string pageHtml)
             {
+                TargetFaction = targetFaction;
                 PageHtml = pageHtml;
             }
 
+            public Faction TargetFaction { get; }
             public string PageHtml { get; }
         }
 
@@ -29,8 +31,9 @@ namespace gcstats.Queries
             public string PortraitUrl { get; set; }
             public string PlayerName { get; set; }
             public Server Server { get; set; }
-            public Faction Faction { get; set; }
-            public FactionRank FactionRank { get; set; }
+            public Faction TargetFaction { get; set; }
+            public Faction CurrentFaction { get; set; }
+            public FactionRank CurrentFactionRank { get; set; }
             public int CompanySeals { get; set; }
             public int LodestoneId { get; set; }
         }
@@ -49,10 +52,10 @@ namespace gcstats.Queries
             {
                 document.LoadHtml(request.PageHtml);
 
-                return Task.FromResult(GetResults().ToArray());
+                return Task.FromResult(GetResults(request.TargetFaction).ToArray());
             }
 
-            private IEnumerable<Result> GetResults()
+            private IEnumerable<Result> GetResults(Faction targetFaction)
             {
                 foreach (var row in document.DocumentNode.SelectNodes(appSettings.Paths.BasePath) ?? Enumerable.Empty<HtmlNode>())
                 {
@@ -70,8 +73,9 @@ namespace gcstats.Queries
                         PortraitUrl = row.SelectSingleNode(appSettings.Paths.PortraitUrl).Attributes["src"].Value,
                         PlayerName = row.SelectSingleNode(appSettings.Paths.PlayerName).InnerText,
                         Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
-                        Faction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value.Replace(" ", string.Empty)),
-                        FactionRank = Enum.Parse<FactionRank>(factionAndRankNameMatch.Last().Value.Replace(" ", string.Empty)),
+                        TargetFaction = targetFaction,
+                        CurrentFaction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value.Replace(" ", string.Empty)),
+                        CurrentFactionRank = Enum.Parse<FactionRank>(factionAndRankNameMatch.Last().Value.Replace(" ", string.Empty)),
                         CompanySeals = int.Parse(row.SelectSingleNode(appSettings.Paths.CompanySeals).InnerText),
                         LodestoneId = int.Parse(Regex.Match(row.Attributes["data-href"].Value, "[0-9]+").Value)
                     };

@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using gcstats.Common;
 using MediatR;
 using System.Data;
 using System.Threading;
@@ -10,17 +11,19 @@ namespace gcstats.Commands
     {
         public class Request : IRequest<int>
         {
-            public Request(int lodestoneId, int rank, int score, long indexId)
+            public Request(int lodestoneId, int rank, int score, Faction faction, long indexId)
             {
                 LodestoneId = lodestoneId;
                 Rank = rank;
                 Score = score;
+                Faction = faction;
                 IndexId = indexId;
             }
 
             public int LodestoneId { get; }
             public int Rank { get; }
             public int Score { get; }
+            public Faction Faction { get; }
             public long IndexId { get; }
         }
 
@@ -32,6 +35,7 @@ namespace gcstats.Commands
                     LodestoneId,
                     Rank,
                     Score,
+                    FactionId,
                     IndexId
                   )
                 VALUES
@@ -39,6 +43,7 @@ namespace gcstats.Commands
                     @LodestoneId,
                     @Rank,
                     @Score,
+                    @Faction,
                     @IndexId
                   )";
 
