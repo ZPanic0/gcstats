@@ -4,7 +4,7 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace gcstats.Commands
+namespace gcstats.Commands.Database
 {
     public static class RegenerateServerTable
     {

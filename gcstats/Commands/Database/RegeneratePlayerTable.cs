@@ -4,28 +4,23 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace gcstats.Commands
+namespace gcstats.Commands.Database
 {
-    public static class RegenerateRawHtmlTable
+    public static class RegeneratePlayerTable
     {
         public class Request : IRequest<int> { }
 
         public class Handler : IRequestHandler<Request, int>
         {
             private const string sql = @"
-                DROP TABLE IF EXISTS RawHtml;
-                CREATE TABLE RawHtml (
-                  Id INTEGER PRIMARY KEY,
-                  TallyingPeriodId INTEGER NOT NULL,
-                  TimePeriodId INTEGER NOT NULL,
+                DROP TABLE IF EXISTS Player;
+                CREATE TABLE Player (
+                  LodestoneId INTEGER PRIMARY KEY,
+                  Name INTEGER NOT NULL,
+                  PortraitUrl TEXT NOT NULL,
                   FactionId INTEGER NOT NULL,
-                  ServerId INTEGER NOT NULL,
-                  Page INTEGER NOT NULL,
-                  HtmlString TEXT NOT NULL,
-                  IndexId INTEGER NOT NULL,
-                  FOREIGN KEY(TimePeriodId) REFERENCES TimePeriod(Id),
-                  FOREIGN KEY(FactionId) REFERENCES Faction(Id),
-                  FOREIGN KEY(ServerId) REFERENCES Server(Id)
+                  FactionRankId INTEGER NOT NULL,
+                  ServerId INTEGER NOT NULL
                 );";
 
             private readonly IDbConnection connection;
@@ -34,7 +29,6 @@ namespace gcstats.Commands
             {
                 this.connection = connection;
             }
-
             public Task<int> Handle(Request request, CancellationToken cancellationToken)
             {
                 return connection.ExecuteAsync(sql);

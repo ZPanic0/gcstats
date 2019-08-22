@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Dapper;
 using MediatR;
 
-namespace gcstats.Queries
+namespace gcstats.Queries.Database
 {
     public static class GetMissingTables
     {

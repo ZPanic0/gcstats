@@ -4,26 +4,25 @@ using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace gcstats.Commands
+namespace gcstats.Commands.Database
 {
-    public static class RegenerateFactionTable
+    public static class RegenerateTimePeriodTable
     {
         public class Request : IRequest<int> { }
 
         public class Handler : IRequestHandler<Request, int>
         {
             private const string sql = @"
-                DROP TABLE IF EXISTS Faction;
-                CREATE TABLE Faction (
+                DROP TABLE IF EXISTS TimePeriod;
+                CREATE TABLE TimePeriod (
                   Id INTEGER PRIMARY KEY,
-                  NAME TEXT NOT NULL
+                  Name STRING NOT NULL
                 );
                 INSERT INTO
-                  Faction (Name)
+                  TimePeriod (Name)
                 VALUES
-                  ('Maelstrom'),
-                  ('Order Of The Twin Adder'),
-                  ('Immortal Flames');";
+                  ('Weekly'),
+                  ('Monthly');";
 
             private readonly IDbConnection connection;
 
