@@ -8,7 +8,12 @@ namespace gcstats.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder
-                .RegisterType<HtmlMinifier>()
+                .RegisterInstance(
+                    new HtmlMinifier(
+                        new HtmlMinificationSettings
+                        {
+                            RemoveOptionalEndTags = false
+                        }))
                 .As<IMarkupMinifier>();
         }
     }
