@@ -2,7 +2,9 @@
 using gcstats.Common.Extensions;
 using MediatR;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -14,37 +16,60 @@ namespace gcstats.Queries
     {
         public class Request : IRequest
         {
-            public Func<IEnumerable<Tuple<DownloadPage.Request, string>>, Task> Callback { get; set; }
-            public int Delay { get; set; } = 1000;
-            public int BatchSize { get; set; } = 15;
+            public Func<ConcurrentQueue<Tuple<DownloadPage.Request, string>>, Func<bool>, Task> Callback { get; set; }
         }
 
         public class Handler : IRequestHandler<Request>
         {
             private readonly IMediator mediator;
+            private readonly object isFetchingLock = new object();
+            private bool isFetching;
+
+            private bool GetIsFetching()
+            {
+                lock (isFetchingLock)
+                {
+                    return isFetching;
+                }
+            }
+
+            private void SetIsFetching(bool value)
+            {
+                lock (isFetchingLock)
+                {
+                    isFetching = value;
+                }
+            }
 
             public Handler(IMediator mediator)
             {
                 this.mediator = mediator;
             }
+
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                foreach (var batch in GetBatches(GetRequests(await GetTallyingPeriodIds()), request.BatchSize))
-                {
-                    var tasks = new List<Task<string>>();
+                var stopwatch = Stopwatch.StartNew();
+                var results = new ConcurrentQueue<Tuple<DownloadPage.Request, string>>();
+                SetIsFetching(true);
 
-                    foreach (var pageRequest in batch)
+                var callback = request.Callback(results, GetIsFetching);
+
+                Parallel.ForEach(GetRequests(await GetTallyingPeriodIds()),
+                    new ParallelOptions { MaxDegreeOfParallelism = 4 },
+                    pageRequest =>
                     {
                         Console.WriteLine($"Fetching for {pageRequest.TallyingPeriodId}, {pageRequest.Server}, {pageRequest.Faction}, Page {pageRequest.Page}");
-                        tasks.Add(mediator.Send(pageRequest));
-                    }
+                        var page = mediator.Send(pageRequest).Result;
 
-                    await Task.WhenAll(tasks);
+                        results.Enqueue(new Tuple<DownloadPage.Request, string>(pageRequest, page));
+                    });
 
-                    await request.Callback(
-                        batch.Zip(tasks, (batchItem, task) => 
-                            new Tuple<DownloadPage.Request, string>(batchItem, task.Result)));
-                }
+                SetIsFetching(false);
+
+                await callback;
+
+                stopwatch.Stop();
+                Console.WriteLine($"Finished in {stopwatch.ElapsedMilliseconds} ms.");
 
                 return Unit.Value;
             }
@@ -83,24 +108,16 @@ namespace gcstats.Queries
                             {
                                 for (int page = 1; page <= 5; page++)
                                 {
-                                    yield return new DownloadPage.Request(tallyingPeriodId, TimePeriod.Weekly, server, faction, page);
+                                    yield return new DownloadPage.Request(
+                                        tallyingPeriodId,
+                                        TimePeriod.Weekly,
+                                        server,
+                                        faction,
+                                        page);
                                 }
                             }
                         }
                     }
-                }
-            }
-
-            private IEnumerable<IEnumerable<DownloadPage.Request>> GetBatches(IEnumerable<DownloadPage.Request> requests, int batchSize)
-            {
-                var index = 0;
-                var length = requests.Count();
-
-                while (index < length)
-                {
-                    yield return requests.Skip(index).Take(batchSize);
-
-                    index += 5;
                 }
             }
         }

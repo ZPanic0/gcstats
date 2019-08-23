@@ -93,7 +93,13 @@ namespace gcstats.Queries
 
             private async Task<Tuple<string, bool>> Get(Request request)
             {
-                long index = default;
+                long index = await mediator.Send(new GetIndexFromQueryData.Request(
+                                    request.TallyingPeriodId,
+                                    request.TimePeriod,
+                                    request.Server,
+                                    request.Faction,
+                                    request.Page));
+
                 try
                 {
                     using (var response = await client.GetAsync(
@@ -107,14 +113,6 @@ namespace gcstats.Queries
                     {
                         if (!response.IsSuccessStatusCode)
                         {
-                            index = index == default
-                                ? await mediator.Send(new GetIndexFromQueryData.Request(
-                                    request.TallyingPeriodId,
-                                    request.TimePeriod,
-                                    request.Server,
-                                    request.Faction,
-                                    request.Page))
-                                : index;
                             Console.WriteLine($"Response for index {index} failed with status code {response.StatusCode}. Retrying...");
                             return new Tuple<string, bool>(string.Empty, false);
                         }
@@ -124,15 +122,7 @@ namespace gcstats.Queries
                 }
                 catch (Exception ex)
                 {
-                    index = index == default
-                        ? await mediator.Send(new GetIndexFromQueryData.Request(
-                            request.TallyingPeriodId,
-                            request.TimePeriod,
-                            request.Server,
-                            request.Faction,
-                            request.Page))
-                        : index;
-                    Console.WriteLine($"Exception thrown in {nameof(GetIndexFromQueryData)}.\nMessage: {ex.Message}\nRetrying...");
+                    Console.WriteLine($"Exception thrown in {nameof(GetIndexFromQueryData)} for index {index}.\nMessage: {ex.Message}\nRetrying...");
                     return new Tuple<string, bool>(string.Empty, false);
                 }
             }
