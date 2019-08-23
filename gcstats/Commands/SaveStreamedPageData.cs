@@ -14,7 +14,7 @@ namespace gcstats.Commands
         public class Request : IRequest
         {
             public Request(Func<bool> isStreaming,
-                           ConcurrentQueue<Tuple<DownloadPage.Request, ParsePlayerDataFromPage.Result[]>> workQueue,
+                           ConcurrentQueue<Tuple<DownloadPage.Request, string>> workQueue,
                            int sleepTime)
             {
                 IsStreaming = isStreaming;
@@ -23,7 +23,7 @@ namespace gcstats.Commands
             }
 
             public Func<bool> IsStreaming { get; }
-            public ConcurrentQueue<Tuple<DownloadPage.Request, ParsePlayerDataFromPage.Result[]>> WorkQueue { get; }
+            public ConcurrentQueue<Tuple<DownloadPage.Request, string>> WorkQueue { get; }
             public int SleepTime { get; }
         }
 
@@ -44,18 +44,16 @@ namespace gcstats.Commands
 
                     var upsertPlayerCommands = Enumerable.Empty<UpsertPlayer.Request>();
                     var insertPerformanceCommands = Enumerable.Empty<InsertPerformance.Request>();
+                    var trimmedPages = new List<Tuple<string, string>>();
                     var count = 0;
 
                     while (request.WorkQueue.TryDequeue(out var result))
                     {
-                        upsertPlayerCommands = upsertPlayerCommands.Concat(
-                            result.Item2.Select(x => new UpsertPlayer.Request(
-                                x.LodestoneId,
-                                x.PlayerName,
-                                x.PortraitUrl,
-                                x.CurrentFaction,
-                                x.CurrentFactionRank,
-                                x.Server)));
+                        var parsed = mediator.Send(new ParsePlayerDataFromPage.Request(
+                            result.Item1.Faction,
+                            result.Item2));
+
+                        var trimmed = mediator.Send(new TrimPageData.Request(result.Item2));
 
                         var indexId = await mediator.Send(new GetIndexFromQueryData.Request(
                             result.Item1.TallyingPeriodId,
@@ -64,19 +62,34 @@ namespace gcstats.Commands
                             result.Item1.Faction,
                             result.Item1.Page));
 
+                        await parsed;
+
                         insertPerformanceCommands = insertPerformanceCommands.Concat(
-                            result.Item2.Select(x => new InsertPerformance.Request(
+                            parsed.Result.Select(x => new InsertPerformance.Request(
                                     x.LodestoneId,
                                     x.Rank,
                                     x.CompanySeals,
                                     x.TargetFaction,
                                     indexId
                                     )));
+
+                        upsertPlayerCommands = upsertPlayerCommands.Concat(
+                            parsed.Result.Select(x => new UpsertPlayer.Request(
+                                x.LodestoneId,
+                                x.PlayerName,
+                                x.PortraitUrl,
+                                x.CurrentFaction,
+                                x.CurrentFactionRank,
+                                x.Server)));
+
+                        trimmedPages.Add(new Tuple<string, string>(indexId.ToString(), await trimmed));
+
                         count++;
                     }
-
+                    var saveZip = mediator.Send(new SavePagesToZip.Request(trimmedPages));
                     await mediator.Send(new UpsertPlayers.Request(upsertPlayerCommands));
                     await mediator.Send(new InsertPerformances.Request(insertPerformanceCommands));
+                    await saveZip;
 
                     await Task.Delay(request.SleepTime);
                     Console.WriteLine($"Saved {count} pages. Sleeping for {request.SleepTime} ms.");
