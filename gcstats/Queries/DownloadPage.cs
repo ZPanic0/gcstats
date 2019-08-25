@@ -2,6 +2,7 @@
 using gcstats.Configuration;
 using MediatR;
 using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,29 +32,22 @@ namespace gcstats.Queries
 
         public class Handler : IRequestHandler<Request, string>
         {
-            private readonly HttpClient client;
+            private const string exceptionMessageTemplate = "Exception thrown for {0}, {1}, {2}, {3}, Page {4}\nMessage: {5}\nRetrying in {6} ms...";
+            private const string failedResponseMessageTemplate = "Request failed for {0}, {1}, {2}, {3}, Page {4}\nStatusCode: {5}\nRetrying in {6} ms...";
             private readonly AppSettings appSettings;
-            private readonly IMediator mediator;
+            private readonly HttpClient client;
 
-            public Handler(HttpClient client, AppSettings appSettings, IMediator mediator)
+            public Handler(AppSettings appSettings, HttpClient client)
             {
-                this.client = client;
                 this.appSettings = appSettings;
-                this.mediator = mediator;
+                this.client = client;
             }
 
             public async Task<string> Handle(Request request, CancellationToken cancellationToken)
             {
                 ValidateInput(request);
 
-                var result = await Get(request);
-                while (!result.Item2)
-                {
-                    Task.Delay(request.Delay).Wait();
-                    result = await Get(request);
-                }
-
-                return result.Item1;
+                return await GetString(request, request.Delay);
             }
 
             private void ValidateInput(Request request)
@@ -91,39 +85,50 @@ namespace gcstats.Queries
                 }
             }
 
-            private async Task<Tuple<string, bool>> Get(Request request)
+            private async Task<string> GetString(Request request, int delay)
             {
-                long index = await mediator.Send(new GetIndexFromQueryData.Request(
-                                    request.TallyingPeriodId,
-                                    request.TimePeriod,
-                                    request.Server,
-                                    request.Faction,
-                                    request.Page));
-
                 try
                 {
-                    using (var response = await client.GetAsync(
-                        string.Format(
-                            appSettings.LodestoneUrlTemplate,
-                            request.TimePeriod.ToString().ToLower(),
-                            request.TallyingPeriodId,
-                            request.Page,
-                            (int)request.Faction,
-                            request.Server)))
-                    {
-                        if (!response.IsSuccessStatusCode)
-                        {
-                            Console.WriteLine($"Response for index {index} failed with status code {response.StatusCode}. Retrying...");
-                            return new Tuple<string, bool>(string.Empty, false);
-                        }
+                    var result = await client.GetAsync(string.Format(
+                        appSettings.LodestoneUrlTemplate,
+                        request.TimePeriod.ToString().ToLower(),
+                        request.TallyingPeriodId,
+                        request.Page,
+                        (int)request.Faction,
+                        request.Server));
 
-                        return new Tuple<string, bool>(await response.Content.ReadAsStringAsync(), true);
+                    if (!result.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine(string.Format(
+                            failedResponseMessageTemplate,
+                            request.TallyingPeriodId,
+                            request.TimePeriod,
+                            request.Server,
+                            request.Faction,
+                            request.Page,
+                            result.StatusCode,
+                            delay));
+
+                        await Task.Delay(delay);
+                        return await GetString(request, delay * 2);
                     }
+
+                    return await result.Content.ReadAsStringAsync();
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Exception thrown in {nameof(GetIndexFromQueryData)} for index {index}.\nMessage: {ex.Message}\nRetrying...");
-                    return new Tuple<string, bool>(string.Empty, false);
+                    Console.WriteLine(string.Format(
+                        exceptionMessageTemplate, 
+                        request.TallyingPeriodId, 
+                        request.TimePeriod, 
+                        request.Server, 
+                        request.Faction, 
+                        request.Page, 
+                        ex.Message,
+                        delay));
+
+                    await Task.Delay(delay);
+                    return await GetString(request, delay * 2);
                 }
             }
         }
