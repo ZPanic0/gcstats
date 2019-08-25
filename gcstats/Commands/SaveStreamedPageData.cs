@@ -3,9 +3,9 @@ using MediatR;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace gcstats.Commands
 {
@@ -14,7 +14,7 @@ namespace gcstats.Commands
         public class Request : IRequest
         {
             public Request(Func<bool> isStreaming,
-                           ConcurrentQueue<Tuple<DownloadPage.Request, string>> workQueue,
+                           ConcurrentQueue<Tuple<long, string>> workQueue,
                            int sleepTime)
             {
                 IsStreaming = isStreaming;
@@ -23,7 +23,7 @@ namespace gcstats.Commands
             }
 
             public Func<bool> IsStreaming { get; }
-            public ConcurrentQueue<Tuple<DownloadPage.Request, string>> WorkQueue { get; }
+            public ConcurrentQueue<Tuple<long, string>> WorkQueue { get; }
             public int SleepTime { get; }
         }
 
@@ -38,58 +38,24 @@ namespace gcstats.Commands
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
+                var trimmedPages = new List<Tuple<long, string>>();
+                int count;
+
                 while (request.IsStreaming() || !request.WorkQueue.IsEmpty)
                 {
-                    var results = new List<Tuple<DownloadPage.Request, ParsePlayerDataFromPage.Result[]>>();
-
-                    var upsertPlayerCommands = Enumerable.Empty<UpsertPlayer.Request>();
-                    var insertPerformanceCommands = Enumerable.Empty<InsertPerformance.Request>();
-                    var trimmedPages = new List<Tuple<string, string>>();
-                    var count = 0;
+                    trimmedPages.Clear();
+                    count = 0;
 
                     while (request.WorkQueue.TryDequeue(out var result))
                     {
-                        var parsed = mediator.Send(new ParsePlayerDataFromPage.Request(
-                            result.Item1.Faction,
-                            result.Item2));
-
-                        var trimmed = mediator.Send(new TrimPageData.Request(result.Item2));
-
-                        var indexId = await mediator.Send(new GetIndexFromQueryData.Request(
-                            result.Item1.TallyingPeriodId,
-                            result.Item1.TimePeriod,
-                            result.Item1.Server,
-                            result.Item1.Faction,
-                            result.Item1.Page));
-
-                        await parsed;
-
-                        insertPerformanceCommands = insertPerformanceCommands.Concat(
-                            parsed.Result.Select(x => new InsertPerformance.Request(
-                                    x.LodestoneId,
-                                    x.Rank,
-                                    x.CompanySeals,
-                                    x.TargetFaction,
-                                    indexId
-                                    )));
-
-                        upsertPlayerCommands = upsertPlayerCommands.Concat(
-                            parsed.Result.Select(x => new UpsertPlayer.Request(
-                                x.LodestoneId,
-                                x.PlayerName,
-                                x.PortraitUrl,
-                                x.CurrentFaction,
-                                x.CurrentFactionRank,
-                                x.Server)));
-
-                        trimmedPages.Add(new Tuple<string, string>(indexId.ToString(), await trimmed));
+                        trimmedPages.Add(new Tuple<long, string>(
+                            result.Item1, 
+                            await mediator.Send(new TrimPageData.Request(result.Item2))));
 
                         count++;
                     }
-                    var saveZip = mediator.Send(new SavePagesToZip.Request(trimmedPages));
-                    await mediator.Send(new UpsertPlayers.Request(upsertPlayerCommands));
-                    await mediator.Send(new InsertPerformances.Request(insertPerformanceCommands));
-                    await saveZip;
+
+                    await mediator.Send(new SavePagesToZip.Request(trimmedPages));
 
                     await Task.Delay(request.SleepTime);
                     Console.WriteLine($"Saved {count} pages. Sleeping for {request.SleepTime} ms.");
