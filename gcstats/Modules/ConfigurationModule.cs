@@ -9,9 +9,15 @@ namespace gcstats.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(
-                JsonConvert.DeserializeObject<AppSettings>(
-                    File.ReadAllText($"{Directory.GetCurrentDirectory()}/appsettings.json")))
+            var directory = Directory.GetCurrentDirectory();
+
+            var appSettings = JsonConvert.DeserializeObject<AppSettings>(
+                    File.ReadAllText($"{directory}/appsettings.json"));
+
+            appSettings.BaseDirectory = directory;
+
+            builder
+                .RegisterInstance(directory)
                 .AsSelf()
                 .SingleInstance();
         }

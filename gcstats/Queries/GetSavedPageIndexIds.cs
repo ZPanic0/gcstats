@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using gcstats.Configuration;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,8 +24,12 @@ namespace gcstats.Queries
 
         public class Handler : IRequestHandler<Request, IEnumerable<long>>
         {
-            private static readonly string directory = Directory.GetCurrentDirectory();
-            private static readonly string pathTemplate = "{0}/pages/{1}.zip";
+            private readonly AppSettings appSettings;
+
+            public Handler(AppSettings appSettings)
+            {
+                this.appSettings = appSettings;
+            }
 
             public Task<IEnumerable<long>> Handle(Request request, CancellationToken cancellationToken)
             {
@@ -33,7 +38,10 @@ namespace gcstats.Queries
 
             private IEnumerable<long> GetIndexIds(int tallyingPeriodId)
             {
-                var path = string.Format(pathTemplate, directory, tallyingPeriodId);
+                var path = string.Format(
+                    appSettings.ArchiveSettings.ArchivePathTemplate, 
+                    appSettings.BaseDirectory, 
+                    tallyingPeriodId);
 
                 if (!File.Exists(path))
                 {
