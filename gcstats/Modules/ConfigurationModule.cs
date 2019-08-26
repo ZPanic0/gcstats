@@ -17,7 +17,7 @@ namespace gcstats.Modules
             appSettings.BaseDirectory = directory;
 
             builder
-                .RegisterInstance(directory)
+                .RegisterInstance(appSettings)
                 .AsSelf()
                 .SingleInstance();
         }
