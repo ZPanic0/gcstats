@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace gcstats.Commands
 {
-    public static class InsertPerformances
+    public static class DeletePerformancesByIndexIds
     {
         public class Request : IRequest
         {
-            public Request(IEnumerable<InsertPerformance.Request> requests)
+            public Request(IEnumerable<DeletePerformancesByIndexId.Request> requests)
             {
                 Requests = requests;
             }
 
-            public IEnumerable<InsertPerformance.Request> Requests { get; }
+            public IEnumerable<DeletePerformancesByIndexId.Request> Requests { get; }
         }
 
         public class Handler : IRequestHandler<Request>

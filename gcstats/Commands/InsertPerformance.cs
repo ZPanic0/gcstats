@@ -53,9 +53,9 @@ namespace gcstats.Commands
             {
                 this.connection = connection;
             }
-            public Task<int> Handle(Request request, CancellationToken cancellationToken)
+            public async Task<int> Handle(Request request, CancellationToken cancellationToken)
             {
-                return connection.ExecuteAsync(sql, request);
+                return await connection.ExecuteAsync(sql, request);
             }
         }
     }
