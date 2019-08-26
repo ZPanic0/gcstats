@@ -60,9 +60,6 @@ namespace gcstats.Commands.Database
                     case "Player":
                         return new RegeneratePlayerTable.Request();
 
-                    case "RawHtml":
-                        return new RegenerateRawHtmlTable.Request();
-
                     case "Performance":
                         return new RegeneratePerformanceTable.Request();
 

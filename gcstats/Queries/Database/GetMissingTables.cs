@@ -24,7 +24,6 @@ namespace gcstats.Queries.Database
                   ('Datacenter', 1),
                   ('TimePeriod', 1),
                   ('Player', 1),
-                  ('RawHtml', 2),
                   ('Performance', 2);
                 SELECT
                   TN.Name,
