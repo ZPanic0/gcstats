@@ -1,15 +1,7 @@
 ﻿using gcstats.Commands;
 using gcstats.Commands.Database;
-using gcstats.Common;
-using gcstats.Modules;
 using gcstats.Queries;
 using MediatR;
-using System;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace gcstats
@@ -25,11 +17,33 @@ namespace gcstats
 
         internal async Task Execute()
         {
-            await mediator.Send(new SetupTables.Request());
-            await mediator.Send(new GetAllMissingPages.Request
+            var tallyingPeriodIdsTask = mediator.Send(new GetTallyingPeriodIdsToCurrent.Request());
+
+            await Task.WhenAll(
+                mediator.Send(new SetupTables.Request()),
+                mediator.Send(new SetupFileStructure.Request()),
+                tallyingPeriodIdsTask);
+
+            Task activeParseRequest = null;
+
+            foreach (var tallyingPeriodId in await tallyingPeriodIdsTask)
             {
-                Callback = (queue, getLockState) => mediator.Send(new SaveStreamedPageData.Request(getLockState, queue, 10000))
-            }); 
+                await mediator.Send(new GetAllMissingPages.Request(tallyingPeriodId)
+                {
+                    Callback = (queue, getLockState) => mediator.Send(new SaveStreamedPageData.Request(getLockState, queue, 10000))
+                });
+
+                if (activeParseRequest == null)
+                {
+                    activeParseRequest = mediator.Send(new ParseAndSavePages.Request(tallyingPeriodId));
+                    continue;
+                }
+
+                await activeParseRequest;
+                activeParseRequest = mediator.Send(new ParseAndSavePages.Request(tallyingPeriodId));
+            }
+
+            await activeParseRequest;
         }
     }
 }

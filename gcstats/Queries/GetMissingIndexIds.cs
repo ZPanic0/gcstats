@@ -29,7 +29,7 @@ namespace gcstats.Queries
             public async Task<IEnumerable<long>> Handle(Request request, CancellationToken cancellationToken)
             {
                 var completedIndexIdsTask = mediator.Send(
-                        new GetSavedPageIndexIds.Request(request.TallyingPeriodId));
+                    new GetSavedPageIndexIds.Request(request.TallyingPeriodId));
 
                 var allIndexIdsTask = mediator.Send(
                     new GetAllIndexIdsForTallyingPeriodId.Request(request.TallyingPeriodId));

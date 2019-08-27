@@ -12,8 +12,13 @@ namespace gcstats.Queries
     {
         public class Request : IRequest
         {
+            public Request(int tallyingPeriodId)
+            {
+                TallyingPeriodId = tallyingPeriodId;
+            }
             public Func<ConcurrentQueue<Tuple<long, string>>, Func<bool>, Task> Callback { get; set; }
             public int MaxActiveRequests { get; set; } = 6;
+            public int TallyingPeriodId { get; }
         }
 
         public class Handler : IRequestHandler<Request>
@@ -47,57 +52,52 @@ namespace gcstats.Queries
             {
                 var results = new ConcurrentQueue<Tuple<long, string>>();
                 var activeRequests = new List<Tuple<long, Task<string>>>();
-                Queue<long> indexIds;
+                var indexIds = new Queue<long>(await mediator.Send(new GetMissingIndexIds.Request(request.TallyingPeriodId)));
 
-                foreach (var tallyingPeriodId in await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request()))
+                if (!indexIds.Any())
                 {
-                    indexIds = new Queue<long>(await mediator.Send(new GetMissingIndexIds.Request(tallyingPeriodId)));
+                    return Unit.Value;
+                }
 
-                    if (!indexIds.Any())
+                SetIsFetching(true);
+                var callback = request.Callback(results, GetIsFetching);
+                activeRequests.Clear();
+
+                while (indexIds.TryDequeue(out var indexId))
+                {
+                    while (activeRequests.Count >= request.MaxActiveRequests)
                     {
-                        continue;
-                    }
+                        await Task.WhenAny(activeRequests.Select(x => x.Item2));
 
-                    SetIsFetching(true);
-                    var callback = request.Callback(results, GetIsFetching);
-                    activeRequests.Clear();
-
-                    while (indexIds.TryDequeue(out var indexId))
-                    {
-                        while (activeRequests.Count >= request.MaxActiveRequests)
+                        foreach (var activeRequest in activeRequests.ToArray())
                         {
-                            await Task.WhenAny(activeRequests.Select(x => x.Item2));
-
-                            foreach (var activeRequest in activeRequests.ToArray())
+                            if (activeRequest.Item2.IsCompletedSuccessfully)
                             {
-                                if (activeRequest.Item2.IsCompletedSuccessfully)
-                                {
-                                    results.Enqueue(new Tuple<long, string>(activeRequest.Item1, activeRequest.Item2.Result));
-                                    activeRequests.Remove(activeRequest);
-                                }
+                                results.Enqueue(new Tuple<long, string>(activeRequest.Item1, activeRequest.Item2.Result));
+                                activeRequests.Remove(activeRequest);
                             }
                         }
-
-                        Console.WriteLine($"Queueing indexId {indexId}");
-                        var queryData = await mediator.Send(new GetQueryDataFromIndex.Request(indexId));
-                        activeRequests.Add(new Tuple<long, Task<string>>(indexId, mediator.Send(new DownloadPage.Request(
-                            queryData.TallyingPeriodId,
-                            queryData.TimePeriod,
-                            queryData.Server,
-                            queryData.Faction,
-                            queryData.Page))));
                     }
 
-                    await Task.WhenAll(activeRequests.Select(x => x.Item2));
-
-                    foreach (var activeRequest in activeRequests.ToArray())
-                    {
-                        results.Enqueue(new Tuple<long, string>(activeRequest.Item1, activeRequest.Item2.Result));
-                    }
-
-                    SetIsFetching(false);
-                    await callback;
+                    Console.WriteLine($"Queueing indexId {indexId}");
+                    var queryData = await mediator.Send(new GetQueryDataFromIndex.Request(indexId));
+                    activeRequests.Add(new Tuple<long, Task<string>>(indexId, mediator.Send(new DownloadPage.Request(
+                        queryData.TallyingPeriodId,
+                        queryData.TimePeriod,
+                        queryData.Server,
+                        queryData.Faction,
+                        queryData.Page))));
                 }
+
+                await Task.WhenAll(activeRequests.Select(x => x.Item2));
+
+                foreach (var activeRequest in activeRequests.ToArray())
+                {
+                    results.Enqueue(new Tuple<long, string>(activeRequest.Item1, activeRequest.Item2.Result));
+                }
+
+                SetIsFetching(false);
+                await callback;
 
                 return Unit.Value;
             }

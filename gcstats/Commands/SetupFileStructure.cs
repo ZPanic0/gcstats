@@ -1,5 +1,6 @@
 ﻿using gcstats.Configuration;
 using MediatR;
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,7 +21,12 @@ namespace gcstats.Commands
             }
             public Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                Directory.CreateDirectory($"{appSettings.BaseDirectory}/pages/");
+                var pagesDirectory = $"{appSettings.BaseDirectory}/pages/";
+                if (!Directory.Exists(pagesDirectory))
+                {
+                    Console.WriteLine("Creating pages directory...");
+                    Directory.CreateDirectory($"{appSettings.BaseDirectory}/pages/");
+                }
 
                 return Unit.Task;
             }
