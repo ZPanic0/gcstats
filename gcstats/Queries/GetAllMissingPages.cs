@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using gcstats.Configuration;
+using MediatR;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,6 +25,7 @@ namespace gcstats.Queries
         public class Handler : IRequestHandler<Request>
         {
             private readonly IMediator mediator;
+            private readonly ILogger logger;
             private readonly object isFetchingLock = new object();
             private bool isFetching;
 
@@ -43,9 +45,10 @@ namespace gcstats.Queries
                 }
             }
 
-            public Handler(IMediator mediator)
+            public Handler(IMediator mediator, ILogger logger)
             {
                 this.mediator = mediator;
+                this.logger = logger;
             }
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
@@ -79,7 +82,7 @@ namespace gcstats.Queries
                         }
                     }
 
-                    Console.WriteLine($"Queueing indexId {indexId}");
+                    logger.WriteLine($"Queueing indexId {indexId}");
                     var queryData = await mediator.Send(new GetQueryDataFromIndex.Request(indexId));
                     activeRequests.Add(new Tuple<long, Task<string>>(indexId, mediator.Send(new DownloadPage.Request(
                         queryData.TallyingPeriodId,

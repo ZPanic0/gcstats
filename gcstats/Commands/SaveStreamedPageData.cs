@@ -1,11 +1,11 @@
-﻿using gcstats.Queries;
+﻿using gcstats.Configuration;
+using gcstats.Queries;
 using MediatR;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace gcstats.Commands
 {
@@ -30,10 +30,12 @@ namespace gcstats.Commands
         public class Handler : IRequestHandler<Request>
         {
             private readonly IMediator mediator;
+            private readonly ILogger logger;
 
-            public Handler(IMediator mediator)
+            public Handler(IMediator mediator, ILogger logger)
             {
                 this.mediator = mediator;
+                this.logger = logger;
             }
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
@@ -49,7 +51,7 @@ namespace gcstats.Commands
                     while (request.WorkQueue.TryDequeue(out var result))
                     {
                         trimmedPages.Add(new Tuple<long, string>(
-                            result.Item1, 
+                            result.Item1,
                             await mediator.Send(new TrimPageData.Request(result.Item2))));
 
                         count++;
@@ -58,7 +60,7 @@ namespace gcstats.Commands
                     await mediator.Send(new SavePagesToZip.Request(trimmedPages));
 
                     await Task.Delay(request.SleepTime);
-                    Console.WriteLine($"Saved {count} pages. Sleeping for {request.SleepTime} ms.");
+                    logger.WriteLine($"Saved {count} pages. Sleeping for {request.SleepTime} ms.");
                 }
 
                 return Unit.Value;

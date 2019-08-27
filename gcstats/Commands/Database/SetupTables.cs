@@ -1,4 +1,5 @@
-﻿using gcstats.Queries.Database;
+﻿using gcstats.Configuration;
+using gcstats.Queries.Database;
 using MediatR;
 using System;
 using System.Linq;
@@ -14,10 +15,12 @@ namespace gcstats.Commands.Database
         public class Handler : IRequestHandler<Request>
         {
             private readonly IMediator mediator;
+            private readonly ILogger logger;
 
-            public Handler(IMediator mediator)
+            public Handler(IMediator mediator, ILogger logger)
             {
                 this.mediator = mediator;
+                this.logger = logger;
             }
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
@@ -26,11 +29,11 @@ namespace gcstats.Commands.Database
 
                 if (missingTables.Any())
                 {
-                    Console.WriteLine("Tables missing or incomplete.");
+                    logger.WriteLine("Tables missing or incomplete.");
 
                     foreach (var missingTableName in missingTables)
                     {
-                        Console.WriteLine($"Regenerating {missingTableName}...");
+                        logger.WriteLine($"Regenerating {missingTableName}...");
 
                         await mediator.Send(GetCommand(missingTableName));
                     }
@@ -70,7 +73,7 @@ namespace gcstats.Commands.Database
 
             private async Task VerifyTables()
             {
-                Console.WriteLine("Verifying...");
+                logger.WriteLine("Verifying...");
 
                 if ((await mediator.Send(new GetMissingTables.Request())).Any())
                 {
@@ -78,7 +81,7 @@ namespace gcstats.Commands.Database
                 }
                 else
                 {
-                    Console.WriteLine("Tables created successfully.");
+                    logger.WriteLine("Tables created successfully.");
                 }
             }
         }

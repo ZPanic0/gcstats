@@ -1,4 +1,5 @@
 ﻿using gcstats.Common;
+using gcstats.Configuration;
 using gcstats.Configuration.Models;
 using MediatR;
 using System;
@@ -36,11 +37,13 @@ namespace gcstats.Queries
             private const string failedResponseMessageTemplate = "Request failed for {0}, {1}, {2}, {3}, Page {4}\nStatusCode: {5}\nRetrying in {6} ms...";
             private readonly AppSettings appSettings;
             private readonly HttpClient client;
+            private readonly ILogger logger;
 
-            public Handler(AppSettings appSettings, HttpClient client)
+            public Handler(AppSettings appSettings, HttpClient client, ILogger logger)
             {
                 this.appSettings = appSettings;
                 this.client = client;
+                this.logger = logger;
             }
 
             public async Task<string> Handle(Request request, CancellationToken cancellationToken)
@@ -99,7 +102,7 @@ namespace gcstats.Queries
 
                     if (!result.IsSuccessStatusCode)
                     {
-                        Console.WriteLine(string.Format(
+                        logger.WriteLine(string.Format(
                             failedResponseMessageTemplate,
                             request.TallyingPeriodId,
                             request.TimePeriod,
@@ -117,7 +120,7 @@ namespace gcstats.Queries
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(string.Format(
+                    logger.WriteLine(string.Format(
                         exceptionMessageTemplate, 
                         request.TallyingPeriodId, 
                         request.TimePeriod, 

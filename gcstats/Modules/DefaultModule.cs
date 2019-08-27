@@ -12,6 +12,7 @@ namespace gcstats.Modules
             builder.RegisterModule<SQLiteModule>();
             builder.RegisterModule<HttpClientModule>();
             builder.RegisterModule<HtmlMinifierModule>();
+            builder.RegisterModule<LoggerModule>();
 
             builder
                 .RegisterType<Application>()
