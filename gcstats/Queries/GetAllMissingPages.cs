@@ -51,7 +51,7 @@ namespace gcstats.Queries
 
                 foreach (var tallyingPeriodId in await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request()))
                 {
-                    indexIds = await GetMissingIndexIds(tallyingPeriodId);
+                    indexIds = new Queue<long>(await mediator.Send(new GetMissingIndexIds.Request(tallyingPeriodId)));
 
                     if (!indexIds.Any())
                     {
@@ -100,19 +100,6 @@ namespace gcstats.Queries
                 }
 
                 return Unit.Value;
-            }
-
-            private async Task<Queue<long>> GetMissingIndexIds(int tallyingPeriodId)
-            {
-                var allIndexIdsTask = mediator.Send(
-                        new GetAllIndexIdsForTallyingPeriodId.Request(tallyingPeriodId));
-
-                var completedIndexIdsTask = mediator.Send(
-                        new GetSavedPageIndexIds.Request(tallyingPeriodId));
-
-                await Task.WhenAll(allIndexIdsTask, completedIndexIdsTask);
-
-                return new Queue<long>(allIndexIdsTask.Result.Except(completedIndexIdsTask.Result));
             }
         }
     }
