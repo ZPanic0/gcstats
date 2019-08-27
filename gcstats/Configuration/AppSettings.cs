@@ -2,6 +2,7 @@
 {
     public class AppSettings
     {
+        public DatabaseSettings DatabaseSettings { get; set; }
         public string BaseDirectory { get; set; }
         public ArchiveSettings ArchiveSettings { get; set; }
         public string LodestoneUrlTemplate { get; set; }

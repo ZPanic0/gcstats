@@ -2,24 +2,27 @@
 using System.Data.SQLite;
 using System.IO;
 using Autofac;
+using gcstats.Configuration;
 
 namespace gcstats.Modules
 {
     class SQLiteModule : Module
     {
-        private const string FileName = "db.sqlite";
-        private static readonly string ConnectionString = $"Data Source={FileName};Version=3";
         protected override void Load(ContainerBuilder builder)
         {
             builder
                 .Register(context =>
                 {
-                    if (!File.Exists(FileName))
+                    var settings = context.Resolve<AppSettings>().DatabaseSettings;
+                    if (!File.Exists(settings.FileName))
                     {
-                        SQLiteConnection.CreateFile(FileName);
+                        SQLiteConnection.CreateFile(settings.FileName);
                     }
 
-                    return new SQLiteConnection(ConnectionString);
+                    return new SQLiteConnection(string.Format(
+                        settings.ConnectionStringTemplate,
+                        settings.FileName
+                        ));
                 })
                 .AsSelf()
                 .As<IDbConnection>()
