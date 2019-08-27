@@ -13,6 +13,7 @@ namespace gcstats.Queries
         public class Request : IRequest
         {
             public Func<ConcurrentQueue<Tuple<long, string>>, Func<bool>, Task> Callback { get; set; }
+            public int MaxActiveRequests { get; set; } = 6;
         }
 
         public class Handler : IRequestHandler<Request>
@@ -59,12 +60,11 @@ namespace gcstats.Queries
 
                     SetIsFetching(true);
                     var callback = request.Callback(results, GetIsFetching);
-                    var maxActiveRequests = 6;
                     activeRequests.Clear();
 
                     while (indexIds.TryDequeue(out var indexId))
                     {
-                        while (activeRequests.Count >= maxActiveRequests)
+                        while (activeRequests.Count >= request.MaxActiveRequests)
                         {
                             await Task.WhenAny(activeRequests.Select(x => x.Item2));
 
