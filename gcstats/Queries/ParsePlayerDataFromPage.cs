@@ -40,12 +40,12 @@ namespace gcstats.Queries
 
         public class Handler : IRequestHandler<Request, Result[]>
         {
-            private readonly AppSettings appSettings;
+            private readonly Paths pathSettings;
             private readonly HtmlDocument document;
 
-            public Handler(AppSettings appSettings, HtmlDocument document)
+            public Handler(Paths pathSettings, HtmlDocument document)
             {
-                this.appSettings = appSettings;
+                this.pathSettings = pathSettings;
                 this.document = document;
             }
             public Task<Result[]> Handle(Request request, CancellationToken cancellationToken)
@@ -57,26 +57,26 @@ namespace gcstats.Queries
 
             private IEnumerable<Result> GetResults(Faction targetFaction)
             {
-                foreach (var row in document.DocumentNode.SelectNodes(appSettings.Paths.BasePath) ?? Enumerable.Empty<HtmlNode>())
+                foreach (var row in document.DocumentNode.SelectNodes(pathSettings.BasePath) ?? Enumerable.Empty<HtmlNode>())
                 {
                     var serverAndDatacenterMatch = Regex.Matches(
-                        row.SelectSingleNode(appSettings.Paths.ServerAndDatacenterName).InnerText,
+                        row.SelectSingleNode(pathSettings.ServerAndDatacenterName).InnerText,
                         "[A-z]+");
 
                     var factionAndRankNameMatch = Regex.Matches(
-                        row.SelectSingleNode(appSettings.Paths.FactionAndRankName).Attributes["alt"].Value,
+                        row.SelectSingleNode(pathSettings.FactionAndRankName).Attributes["alt"].Value,
                         "[A-z ]+");
 
                     yield return new Result
                     {
-                        Rank = int.Parse(row.SelectSingleNode(appSettings.Paths.Rank).InnerText),
-                        PortraitUrl = row.SelectSingleNode(appSettings.Paths.PortraitUrl).Attributes["src"].Value,
-                        PlayerName = row.SelectSingleNode(appSettings.Paths.PlayerName).InnerText,
+                        Rank = int.Parse(row.SelectSingleNode(pathSettings.Rank).InnerText),
+                        PortraitUrl = row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value,
+                        PlayerName = row.SelectSingleNode(pathSettings.PlayerName).InnerText,
                         Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
                         TargetFaction = targetFaction,
                         CurrentFaction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value.Replace(" ", string.Empty)),
                         CurrentFactionRank = Enum.Parse<FactionRank>(factionAndRankNameMatch.Last().Value.Replace(" ", string.Empty)),
-                        CompanySeals = int.Parse(row.SelectSingleNode(appSettings.Paths.CompanySeals).InnerText),
+                        CompanySeals = int.Parse(row.SelectSingleNode(pathSettings.CompanySeals).InnerText),
                         LodestoneId = int.Parse(Regex.Match(row.Attributes["data-href"].Value, "[0-9]+").Value)
                     };
                 }

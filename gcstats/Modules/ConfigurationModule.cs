@@ -20,6 +20,16 @@ namespace gcstats.Modules
                 .RegisterInstance(appSettings)
                 .AsSelf()
                 .SingleInstance();
+
+            builder
+                .RegisterInstance(appSettings.DatabaseSettings)
+                .AsSelf()
+                .SingleInstance();
+
+            builder
+                .RegisterInstance(appSettings.Paths)
+                .AsSelf()
+                .SingleInstance();
         }
     }
 }

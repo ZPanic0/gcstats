@@ -24,19 +24,19 @@ namespace gcstats.Queries
         public class Handler : IRequestHandler<Request, string>
         {
             private readonly HtmlDocument document;
-            private readonly AppSettings appSettings;
+            private readonly Paths pathSettings;
             private readonly IMarkupMinifier minifier;
 
-            public Handler(HtmlDocument document, AppSettings appSettings, IMarkupMinifier minifier)
+            public Handler(HtmlDocument document, Paths pathSettings, IMarkupMinifier minifier)
             {
                 this.document = document;
-                this.appSettings = appSettings;
+                this.pathSettings = pathSettings;
                 this.minifier = minifier;
             }
             public Task<string> Handle(Request request, CancellationToken cancellationToken)
             {
                 document.LoadHtml(request.PageHtml);
-                var tableHtml = document.DocumentNode.SelectSingleNode(appSettings.Paths.Table);
+                var tableHtml = document.DocumentNode.SelectSingleNode(pathSettings.Table);
                 var minifiedResult = minifier.Minify(tableHtml.OuterHtml);
 
                 if (!minifiedResult.Errors.Any())
