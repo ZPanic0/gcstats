@@ -21,6 +21,7 @@ namespace gcstats.Commands.Database
                 INSERT INTO
                   Server (Name)
                 VALUES
+                  ('NoInput'),
                   ('Aegis'),
                   ('Atomos'),
                   ('Carbuncle'),

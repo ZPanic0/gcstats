@@ -52,6 +52,7 @@ namespace gcstats.Commands
 
                     transaction.Commit();
                 }
+                connection.Close();
 
                 return Unit.Value;
             }

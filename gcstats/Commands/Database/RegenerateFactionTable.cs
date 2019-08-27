@@ -21,6 +21,7 @@ namespace gcstats.Commands.Database
                 INSERT INTO
                   Faction (Name)
                 VALUES
+                  ('NoInput'),
                   ('Maelstrom'),
                   ('Order Of The Twin Adder'),
                   ('Immortal Flames');";
