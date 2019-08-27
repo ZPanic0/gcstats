@@ -2,7 +2,7 @@
 using System.Data.SQLite;
 using System.IO;
 using Autofac;
-using gcstats.Configuration;
+using gcstats.Configuration.Models;
 
 namespace gcstats.Modules
 {

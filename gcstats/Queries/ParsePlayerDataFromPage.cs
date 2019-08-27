@@ -1,5 +1,5 @@
 ﻿using gcstats.Common;
-using gcstats.Configuration;
+using gcstats.Configuration.Models;
 using HtmlAgilityPack;
 using MediatR;
 using System;

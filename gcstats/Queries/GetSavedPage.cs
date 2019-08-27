@@ -1,4 +1,4 @@
-﻿using gcstats.Configuration;
+﻿using gcstats.Configuration.Models;
 using MediatR;
 using System.IO;
 using System.IO.Compression;

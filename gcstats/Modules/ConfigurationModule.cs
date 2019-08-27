@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using gcstats.Configuration;
+using gcstats.Configuration.Models;
 using Newtonsoft.Json;
 using System.IO;
 

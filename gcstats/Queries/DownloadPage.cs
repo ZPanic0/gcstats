@@ -1,5 +1,5 @@
 ﻿using gcstats.Common;
-using gcstats.Configuration;
+using gcstats.Configuration.Models;
 using MediatR;
 using System;
 using System.Net;

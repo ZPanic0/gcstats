@@ -1,4 +1,4 @@
-﻿namespace gcstats.Configuration
+﻿namespace gcstats.Configuration.Models
 {
     public class DatabaseSettings
     {
