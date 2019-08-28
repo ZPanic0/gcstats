@@ -24,6 +24,7 @@ namespace gcstats.Queries.Database
                   ('Datacenter', 1),
                   ('TimePeriod', 1),
                   ('Player', 1),
+                  ('ScanProgress', 1),
                   ('Performance', 2);
                 SELECT
                   TN.Name,

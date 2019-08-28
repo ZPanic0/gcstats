@@ -66,6 +66,9 @@ namespace gcstats.Commands.Database
                     case "Performance":
                         return new RegeneratePerformanceTable.Request();
 
+                    case "ScanProgress":
+                        return new RegenerateScanProgressTable.Request();
+
                     default:
                         throw new ArgumentException($"Behavior for table name not defined: {tableName}");
                 }

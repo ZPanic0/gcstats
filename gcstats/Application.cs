@@ -1,7 +1,9 @@
 ﻿using gcstats.Commands;
 using gcstats.Commands.Database;
+using gcstats.Configuration;
 using gcstats.Queries;
 using MediatR;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gcstats
@@ -9,25 +11,32 @@ namespace gcstats
     public class Application
     {
         private readonly IMediator mediator;
+        private readonly ILogger logger;
 
-        public Application(IMediator mediator)
+        public Application(IMediator mediator, ILogger logger)
         {
             this.mediator = mediator;
+            this.logger = logger;
         }
 
         internal async Task Execute()
         {
-            var tallyingPeriodIdsTask = mediator.Send(new GetTallyingPeriodIdsToCurrent.Request());
-
             await Task.WhenAll(
                 mediator.Send(new SetupTables.Request()),
-                mediator.Send(new SetupFileStructure.Request()),
-                tallyingPeriodIdsTask);
+                mediator.Send(new SetupFileStructure.Request()));
 
+            var tallyingPeriodIds = (await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request()))
+                .Except(await mediator.Send(new GetCompletedTallyingPeriodIds.Request()));
+
+            int activeParseRequestTallyingPeriodId = 0;
             Task activeParseRequest = null;
 
-            foreach (var tallyingPeriodId in await tallyingPeriodIdsTask)
+            foreach (var tallyingPeriodId in tallyingPeriodIds)
             {
+                logger.WriteLine($"Fetching TallyingPeriod {tallyingPeriodId}");
+
+                await mediator.Send(new UpsertScanProgress.Request(tallyingPeriodId, false));
+
                 await mediator.Send(new GetAllMissingPages.Request(tallyingPeriodId)
                 {
                     Callback = (queue, getLockState) => mediator.Send(new SaveStreamedPageData.Request(getLockState, queue, 10000))
@@ -35,15 +44,21 @@ namespace gcstats
 
                 if (activeParseRequest == null)
                 {
+                    logger.WriteLine($"Parsing TallyingPeriod {tallyingPeriodId}");
                     activeParseRequest = mediator.Send(new ParseAndSavePages.Request(tallyingPeriodId));
+                    activeParseRequestTallyingPeriodId = tallyingPeriodId;
                     continue;
                 }
 
                 await activeParseRequest;
+                await mediator.Send(new UpsertScanProgress.Request(activeParseRequestTallyingPeriodId, true));
+                logger.WriteLine($"Parsing TallyingPeriod {tallyingPeriodId}");
                 activeParseRequest = mediator.Send(new ParseAndSavePages.Request(tallyingPeriodId));
+                activeParseRequestTallyingPeriodId = tallyingPeriodId;
             }
 
             await activeParseRequest;
+            await mediator.Send(new UpsertScanProgress.Request(activeParseRequestTallyingPeriodId, true));
         }
     }
 }
