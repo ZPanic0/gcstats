@@ -1,12 +1,12 @@
-﻿using System.Data;
+﻿using Autofac;
+using gcstats.Configuration.Models;
+using System.Data;
 using System.Data.SQLite;
 using System.IO;
-using Autofac;
-using gcstats.Configuration.Models;
 
 namespace gcstats.Modules
 {
-    class SQLiteModule : Module
+    internal class SQLiteModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {
@@ -19,14 +19,29 @@ namespace gcstats.Modules
                         SQLiteConnection.CreateFile(settings.FileName);
                     }
 
-                    return new SQLiteConnection(string.Format(
+                    var connection = new SQLiteConnection(string.Format(
                         settings.ConnectionStringTemplate,
                         settings.FileName
                         ));
+
+                    connection.Open();
+
+                    Configure(connection, context.Resolve<DatabaseSettings>().Pragma);
+
+                    return connection;
                 })
                 .AsSelf()
                 .As<IDbConnection>()
                 .SingleInstance();
+        }
+
+        private void Configure(SQLiteConnection connection, string pragma)
+        {
+            using SQLiteCommand command = connection.CreateCommand();
+
+            command.CommandType = CommandType.Text;
+            command.CommandText = pragma;
+            command.ExecuteNonQuery();
         }
     }
 }

@@ -4,5 +4,6 @@
     {
         public string FileName { get; set; }
         public string ConnectionStringTemplate { get; set; }
+        public string Pragma { get; set; }
     }
 }
