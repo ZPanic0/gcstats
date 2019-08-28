@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace gcstats.Queries
 {
@@ -57,23 +58,26 @@ namespace gcstats.Queries
 
             private IEnumerable<Result> GetResults(Faction targetFaction, Request request)
             {
+                var factionAndRankNameRegex = new Regex("[A-z ]+");
+                var serverAndDatacenterRegex = new Regex("[A-z]+");
+                var portraitUrlRegex = new Regex(@"(?:https:\/\/img2?\.finalfantasyxiv.com\/)(?<core>.*[(\.png)(\.jpg)])(.*)?");
+
                 foreach (var row in document.DocumentNode.SelectNodes(pathSettings.BasePath) ?? Enumerable.Empty<HtmlNode>())
                 {
-                    var playerName = row.SelectSingleNode(pathSettings.PlayerName)?.InnerText ?? string.Empty;
+                    var playerName = HttpUtility.HtmlDecode(row.SelectSingleNode(pathSettings.PlayerName)?.InnerText ?? string.Empty);
 
-                    var serverAndDatacenterMatch = Regex.Matches(
-                        row.SelectSingleNode(pathSettings.ServerAndDatacenterName).InnerText,
-                        "[A-z]+");
+                    var serverAndDatacenterMatch = serverAndDatacenterRegex
+                        .Matches(row.SelectSingleNode(pathSettings.ServerAndDatacenterName).InnerText);
 
-                    var factionAndRankNameMatch = Regex.Matches(
+                    var factionAndRankNameMatch = factionAndRankNameRegex
+                        .Matches(
                             row.SelectSingleNode(pathSettings.FactionAndRankName)?.Attributes["alt"].Value
-                            ?? "No Input", 
-                        "[A-z ]+");
+                            ?? "No Input");
 
                     yield return new Result
                     {
                         Rank = int.Parse(row.SelectSingleNode(pathSettings.Rank).InnerText),
-                        PortraitUrl = row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value,
+                        PortraitUrl = portraitUrlRegex.Match(row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value).Groups["core"].Value,
                         PlayerName = playerName,
                         Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
                         TargetFaction = targetFaction,
