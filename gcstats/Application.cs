@@ -1,4 +1,4 @@
-﻿using gcstats.Commands;
+using gcstats.Commands;
 using gcstats.Commands.Database;
 using gcstats.Configuration;
 using gcstats.Queries;
@@ -12,11 +12,13 @@ namespace gcstats
     {
         private readonly IMediator mediator;
         private readonly ILogger logger;
+        private readonly IDbConnection connection;
 
-        public Application(IMediator mediator, ILogger logger)
+        public Application(IMediator mediator, ILogger logger, IDbConnection connection)
         {
             this.mediator = mediator;
             this.logger = logger;
+            this.connection = connection;
         }
 
         internal async Task Execute()
@@ -59,6 +61,8 @@ namespace gcstats
 
             await activeParseRequest;
             await mediator.Send(new UpsertScanProgress.Request(activeParseRequestTallyingPeriodId, true));
+
+            connection.Close();
         }
     }
 }
