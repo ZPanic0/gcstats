@@ -59,46 +59,29 @@ namespace gcstats.Queries
             {
                 foreach (var row in document.DocumentNode.SelectNodes(pathSettings.BasePath) ?? Enumerable.Empty<HtmlNode>())
                 {
-                    var playerName = row.SelectSingleNode(pathSettings.PlayerName).InnerText;
+                    var playerName = row.SelectSingleNode(pathSettings.PlayerName)?.InnerText ?? string.Empty;
 
                     var serverAndDatacenterMatch = Regex.Matches(
                         row.SelectSingleNode(pathSettings.ServerAndDatacenterName).InnerText,
                         "[A-z]+");
 
-                    if (string.IsNullOrEmpty(playerName))
-                    {
-                        yield return new Result
-                        {
-                            Rank = int.Parse(row.SelectSingleNode(pathSettings.Rank).InnerText),
-                            PortraitUrl = row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value,
-                            PlayerName = string.Empty,
-                            Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
-                            TargetFaction = targetFaction,
-                            CurrentFaction = Faction.NoInput,
-                            CurrentFactionRank = FactionRank.NoInput,
-                            CompanySeals = int.Parse(row.SelectSingleNode(pathSettings.CompanySeals).InnerText),
-                            LodestoneId = int.Parse(Regex.Match(row.Attributes["data-href"].Value, "[0-9]+").Value)
-                        };
-                    }
-                    else
-                    {
-                        var factionAndRankNameMatch = Regex.Matches(
-                        row.SelectSingleNode(pathSettings.FactionAndRankName).Attributes["alt"].Value,
+                    var factionAndRankNameMatch = Regex.Matches(
+                            row.SelectSingleNode(pathSettings.FactionAndRankName)?.Attributes["alt"].Value
+                            ?? "No Input", 
                         "[A-z ]+");
 
-                        yield return new Result
-                        {
-                            Rank = int.Parse(row.SelectSingleNode(pathSettings.Rank).InnerText),
-                            PortraitUrl = row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value,
-                            PlayerName = row.SelectSingleNode(pathSettings.PlayerName).InnerText,
-                            Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
-                            TargetFaction = targetFaction,
-                            CurrentFaction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value.Replace(" ", string.Empty)),
-                            CurrentFactionRank = Enum.Parse<FactionRank>(factionAndRankNameMatch.Last().Value.Replace(" ", string.Empty)),
-                            CompanySeals = int.Parse(row.SelectSingleNode(pathSettings.CompanySeals).InnerText),
-                            LodestoneId = int.Parse(Regex.Match(row.Attributes["data-href"].Value, "[0-9]+").Value)
-                        };
-                    }
+                    yield return new Result
+                    {
+                        Rank = int.Parse(row.SelectSingleNode(pathSettings.Rank).InnerText),
+                        PortraitUrl = row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value,
+                        PlayerName = playerName,
+                        Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
+                        TargetFaction = targetFaction,
+                        CurrentFaction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value.Replace(" ", string.Empty)),
+                        CurrentFactionRank = Enum.Parse<FactionRank>(factionAndRankNameMatch.Last().Value.Replace(" ", string.Empty)),
+                        CompanySeals = int.Parse(row.SelectSingleNode(pathSettings.CompanySeals).InnerText),
+                        LodestoneId = int.Parse(Regex.Match(row.Attributes["data-href"].Value, "[0-9]+").Value)
+                    };
                 }
             }
         }
