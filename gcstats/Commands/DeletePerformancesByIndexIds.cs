@@ -30,7 +30,6 @@ namespace gcstats.Commands
             }
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
                     foreach (var playerRequest in request.Requests)
@@ -40,7 +39,6 @@ namespace gcstats.Commands
 
                     transaction.Commit();
                 }
-                connection.Close();
 
                 return Unit.Value;
             }

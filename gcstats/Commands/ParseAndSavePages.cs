@@ -42,7 +42,6 @@ namespace gcstats.Commands
                     ? request.IndexIds 
                     : await mediator.Send(new GetAllIndexIdsForTallyingPeriodId.Request(request.TallyingPeriodId));
 
-                connection.Open();
                 using (var transaction = connection.BeginTransaction())
                 {
                     await foreach (var command in GetAllCommands(indexIds))
@@ -52,7 +51,6 @@ namespace gcstats.Commands
 
                     transaction.Commit();
                 }
-                connection.Close();
 
                 return Unit.Value;
             }
