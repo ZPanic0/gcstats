@@ -3,6 +3,7 @@ using gcstats.Commands.Database;
 using gcstats.Configuration;
 using gcstats.Queries;
 using MediatR;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 

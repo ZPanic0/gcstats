@@ -1,8 +1,9 @@
-﻿using gcstats.Configuration.Models;
+﻿using gcstats.Common;
+using gcstats.Configuration.Models;
 using MediatR;
+using System;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,14 +23,26 @@ namespace gcstats.Queries
 
         public class Handler : IRequestHandler<Request, string>
         {
-            public Handler(AppSettings appSettings)
+            public Handler(AppSettings appSettings, PageCache pageCache)
             {
                 this.appSettings = appSettings;
+                this.pageCache = pageCache;
             }
 
             private readonly AppSettings appSettings;
+            private readonly PageCache pageCache;
 
             public async Task<string> Handle(Request request, CancellationToken cancellationToken)
+            {
+                if (!pageCache.Contains(request.IndexId))
+                {
+                    await LoadFile(request);
+                }
+
+                return pageCache.PopPage(request.IndexId);
+            }
+
+            private async Task LoadFile(Request request)
             {
                 var path = string.Format(
                     appSettings.ArchiveSettings.ArchivePathTemplate,
@@ -39,13 +52,11 @@ namespace gcstats.Queries
                 using var file = File.OpenRead(path);
                 using var archive = new ZipArchive(file, ZipArchiveMode.Read);
 
-                var fileName = string.Format(appSettings.ArchiveSettings.FileNameTemplate, request.IndexId);
-
-                using var archiveEntry = new StreamReader(archive.Entries
-                    .First(entry => entry.FullName == fileName)
-                    .Open());
-
-                return await archiveEntry.ReadToEndAsync();
+                foreach (var entry in archive.Entries)
+                {
+                    using var archiveEntry = new StreamReader(entry.Open());
+                    pageCache.Load(new Tuple<long, string>(long.Parse(entry.Name.Split('.')[0]), await archiveEntry.ReadToEndAsync()));
+                }
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using gcstats.Common;
 
 namespace gcstats.Modules
 {
@@ -13,6 +14,11 @@ namespace gcstats.Modules
             builder.RegisterModule<HttpClientModule>();
             builder.RegisterModule<HtmlMinifierModule>();
             builder.RegisterModule<LoggerModule>();
+
+            builder
+                .RegisterType<PageCache>()
+                .AsSelf()
+                .SingleInstance();
 
             builder
                 .RegisterType<Application>()
