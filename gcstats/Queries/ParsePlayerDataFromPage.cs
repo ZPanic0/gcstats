@@ -14,7 +14,7 @@ namespace gcstats.Queries
 {
     public static class ParsePlayerDataFromPage
     {
-        public class Request : IRequest<Result[]>
+        public class Request : IRequest<IEnumerable<Result>>
         {
             public Request(Faction targetFaction, string pageHtml)
             {
@@ -39,54 +39,53 @@ namespace gcstats.Queries
             public int LodestoneId { get; set; }
         }
 
-        public class Handler : IRequestHandler<Request, Result[]>
+        public class Handler : IRequestHandler<Request, IEnumerable<Result>>
         {
             private readonly Paths pathSettings;
             private readonly HtmlDocument document;
+            private static readonly Regex factionAndRankNameRegex = new Regex("[A-z ]+");
+            private static readonly Regex serverAndDatacenterRegex = new Regex("[A-z]+");
+            private static readonly Regex portraitUrlRegex = new Regex(@"(?:https:\/\/img2?\.finalfantasyxiv.com\/)(?<core>.*[(\.png)(\.jpg)])(.*)?");
+            private static readonly Regex lodestoneIdRegex = new Regex("[0-9]+");
 
             public Handler(Paths pathSettings, HtmlDocument document)
             {
                 this.pathSettings = pathSettings;
                 this.document = document;
             }
-            public Task<Result[]> Handle(Request request, CancellationToken cancellationToken)
+            public Task<IEnumerable<Result>> Handle(Request request, CancellationToken cancellationToken)
             {
                 document.LoadHtml(request.PageHtml);
 
-                return Task.FromResult(GetResults(request.TargetFaction, request).ToArray());
+                var rows = document.DocumentNode.SelectNodes(pathSettings.BasePath) ?? Enumerable.Empty<HtmlNode>();
+
+                return Task.FromResult((IEnumerable<Result>)rows.AsParallel().Select(x => GetResult(request.TargetFaction, x)));
             }
 
-            private IEnumerable<Result> GetResults(Faction targetFaction, Request request)
+            private Result GetResult(Faction targetFaction, HtmlNode row)
             {
-                var factionAndRankNameRegex = new Regex("[A-z ]+");
-                var serverAndDatacenterRegex = new Regex("[A-z]+");
-                var portraitUrlRegex = new Regex(@"(?:https:\/\/img2?\.finalfantasyxiv.com\/)(?<core>.*[(\.png)(\.jpg)])(.*)?");
+                var playerName = HttpUtility.HtmlDecode(row.SelectSingleNode(pathSettings.PlayerName)?.InnerText ?? string.Empty);
 
-                foreach (var row in document.DocumentNode.SelectNodes(pathSettings.BasePath) ?? Enumerable.Empty<HtmlNode>())
+                var serverAndDatacenterMatch = serverAndDatacenterRegex
+                    .Matches(row.SelectSingleNode(pathSettings.ServerAndDatacenterName).InnerText);
+
+                var factionAndRankNameMatch = factionAndRankNameRegex
+                    .Matches(
+                        row.SelectSingleNode(pathSettings.FactionAndRankName)?.Attributes["alt"].Value
+                        ?? "No Input");
+
+                return new Result
                 {
-                    var playerName = HttpUtility.HtmlDecode(row.SelectSingleNode(pathSettings.PlayerName)?.InnerText ?? string.Empty);
-
-                    var serverAndDatacenterMatch = serverAndDatacenterRegex
-                        .Matches(row.SelectSingleNode(pathSettings.ServerAndDatacenterName).InnerText);
-
-                    var factionAndRankNameMatch = factionAndRankNameRegex
-                        .Matches(
-                            row.SelectSingleNode(pathSettings.FactionAndRankName)?.Attributes["alt"].Value
-                            ?? "No Input");
-
-                    yield return new Result
-                    {
-                        Rank = int.Parse(row.SelectSingleNode(pathSettings.Rank).InnerText),
-                        PortraitUrl = portraitUrlRegex.Match(row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value).Groups["core"].Value,
-                        PlayerName = playerName,
-                        Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
-                        TargetFaction = targetFaction,
-                        CurrentFaction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value.Replace(" ", string.Empty)),
-                        CurrentFactionRank = Enum.Parse<FactionRank>(factionAndRankNameMatch.Last().Value.Replace(" ", string.Empty)),
-                        CompanySeals = int.Parse(row.SelectSingleNode(pathSettings.CompanySeals).InnerText),
-                        LodestoneId = int.Parse(Regex.Match(row.Attributes["data-href"].Value, "[0-9]+").Value)
-                    };
-                }
+                    Rank = int.Parse(row.SelectSingleNode(pathSettings.Rank).InnerText),
+                    PortraitUrl = portraitUrlRegex.Match(row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value).Groups["core"].Value,
+                    PlayerName = playerName,
+                    Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
+                    TargetFaction = targetFaction,
+                    CurrentFaction = Enum.Parse<Faction>(factionAndRankNameMatch.First().Value.Replace(" ", string.Empty)),
+                    CurrentFactionRank = Enum.Parse<FactionRank>(factionAndRankNameMatch.Last().Value.Replace(" ", string.Empty)),
+                    CompanySeals = int.Parse(row.SelectSingleNode(pathSettings.CompanySeals).InnerText),
+                    LodestoneId = int.Parse(lodestoneIdRegex.Match(row.Attributes["data-href"].Value).Value)
+                };
             }
         }
     }
