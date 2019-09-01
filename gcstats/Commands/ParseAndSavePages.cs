@@ -1,4 +1,4 @@
-﻿using gcstats.Queries;
+using gcstats.Queries;
 using MediatR;
 using System.Collections.Generic;
 using System.Data;
@@ -10,7 +10,8 @@ namespace gcstats.Commands
 {
     public static class ParseAndSavePages
     {
-        public class Request : IRequest {
+        public class Request : IRequest
+        {
             public Request(IEnumerable<long> indexIds)
             {
                 IndexIds = indexIds;
@@ -36,17 +37,27 @@ namespace gcstats.Commands
                 this.connection = connection;
             }
 
-            public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
+            public async Task<Unit> Handle(Request request, CancellationToken cancellationToken) 
             {
-                var indexIds = request.TallyingPeriodId == default 
-                    ? request.IndexIds 
+                await mediator.Send(new LoadFileToCache.Request(request.TallyingPeriodId));
+
+                var indexIds = request.TallyingPeriodId == default
+                    ? request.IndexIds
                     : await mediator.Send(new GetAllIndexIdsForTallyingPeriodId.Request(request.TallyingPeriodId));
+
+                var commandSets = indexIds.Select(indexId => GetCommands(indexId)).ToArray();
+
+                await Task.WhenAll(commandSets);
 
                 using (var transaction = connection.BeginTransaction())
                 {
-                    await foreach (var command in GetAllCommands(indexIds))
+                    foreach (var commandSet in commandSets)
                     {
-                        await mediator.Send(command);
+                        var myv = await commandSet;
+                        foreach (var command in myv)
+                        {
+                            await mediator.Send(command);
+                        }
                     }
 
                     transaction.Commit();
@@ -55,50 +66,42 @@ namespace gcstats.Commands
                 return Unit.Value;
             }
 
-            private async IAsyncEnumerable<IRequest<int>> GetAllCommands(IEnumerable<long> indexIds)
+            private async Task<IEnumerable<IRequest<int>>> GetCommands(long indexId)
             {
-                foreach (var indexId in indexIds)
-                {
-                    var pageTask = mediator.Send(new GetSavedPage.Request(indexId));
+                var page = await mediator.Send(new GetSavedPage.Request(indexId));
 
-                    var queryDataTask = mediator.Send(new GetQueryDataFromIndex.Request(indexId));
+                var queryData = await mediator.Send(new GetQueryDataFromIndex.Request(indexId));
 
-                    await Task.WhenAll(pageTask, queryDataTask);
+                var playerData = await mediator.Send(
+                    new ParsePlayerDataFromPage.Request(queryData.Faction, page));
 
-                    var playerData = await mediator.Send(
-                        new ParsePlayerDataFromPage.Request(queryDataTask.Result.Faction, pageTask.Result));
-
-                    foreach (var command in GetCommandsForSet(indexId, playerData))
-                    {
-                        yield return command;
-                    }
-                }
+                return GetCommandsForSet(indexId, playerData);
             }
 
-            private IEnumerable<IRequest<int>> GetCommandsForSet(long indexId, ParsePlayerDataFromPage.Result[] playerData)
+            private IEnumerable<IRequest<int>> GetCommandsForSet(long indexId, IEnumerable<ParsePlayerDataFromPage.Result> playerData)
             {
-                yield return new DeletePerformancesByIndexId.Request(indexId);
+                var commands = new List<IRequest<int>>(201)
+                { new DeletePerformancesByIndexId.Request(indexId)};
 
-                foreach (var item in playerData.Select(x => new UpsertPlayer.Request(
-                    x.LodestoneId,
-                    x.PlayerName,
-                    x.PortraitUrl,
-                    x.CurrentFaction,
-                    x.CurrentFactionRank,
-                    x.Server)))
+                foreach (var item in playerData)
                 {
-                    yield return item;
+                    commands.Add(new UpsertPlayer.Request(
+                        item.LodestoneId,
+                        item.PlayerName,
+                        item.PortraitUrl,
+                        item.CurrentFaction,
+                        item.CurrentFactionRank,
+                        item.Server));
+
+                    commands.Add(new InsertPerformance.Request(
+                        item.LodestoneId,
+                        item.Rank,
+                        item.CompanySeals,
+                        item.TargetFaction,
+                        indexId));
                 }
 
-                foreach (var item in playerData.Select(x => new InsertPerformance.Request(
-                    x.LodestoneId,
-                    x.Rank,
-                    x.CompanySeals,
-                    x.TargetFaction,
-                    indexId)))
-                {
-                    yield return item;
-                }
+                return commands;
             }
         }
     }

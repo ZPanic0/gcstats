@@ -53,13 +53,14 @@ namespace gcstats.Queries
                 this.pathSettings = pathSettings;
                 this.document = document;
             }
-            public Task<IEnumerable<Result>> Handle(Request request, CancellationToken cancellationToken)
+            public async Task<IEnumerable<Result>> Handle(Request request, CancellationToken cancellationToken)
             {
                 document.LoadHtml(request.PageHtml);
 
                 var rows = document.DocumentNode.SelectNodes(pathSettings.BasePath) ?? Enumerable.Empty<HtmlNode>();
 
-                return Task.FromResult((IEnumerable<Result>)rows.AsParallel().Select(x => GetResult(request.TargetFaction, x)));
+
+                return rows.Select(row => GetResult(request.TargetFaction, row)).ToArray();
             }
 
             private Result GetResult(Faction targetFaction, HtmlNode row)
