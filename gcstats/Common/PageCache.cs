@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace gcstats.Common
 {
     public class PageCache
     {
-        private readonly Dictionary<long, string> loadedFiles;
+        private ConcurrentDictionary<long, string> loadedFiles;
 
         public PageCache()
         {
-            loadedFiles = new Dictionary<long, string>(2050);
+            loadedFiles = new ConcurrentDictionary<long, string>();
         }
 
         public bool Contains(long indexId)
@@ -19,9 +20,7 @@ namespace gcstats.Common
 
         public string PopPage(long indexId)
         {
-            var page = loadedFiles[indexId];
-
-            loadedFiles.Remove(indexId);
+            loadedFiles.Remove(indexId, out var page);
 
             return page;
         }
@@ -36,10 +35,25 @@ namespace gcstats.Common
 
         public void Load(Tuple<long, string> page)
         {
-            if (!loadedFiles.ContainsKey(page.Item1))
+            Load(page.Item1, page.Item2);
+        }
+
+        public void Load(long indexId, string page)
+        {
+            if (!loadedFiles.ContainsKey(indexId))
             {
-                loadedFiles.Add(page.Item1, page.Item2);
+                loadedFiles.TryAdd(indexId, page);
             }
+        }
+
+        public IEnumerable<KeyValuePair<long, string>> ToArray()
+        {
+            return loadedFiles.ToArray();
+        }
+
+        public void Clear()
+        {
+            loadedFiles = new ConcurrentDictionary<long, string>();
         }
     }
 }

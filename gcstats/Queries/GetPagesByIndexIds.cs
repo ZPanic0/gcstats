@@ -1,7 +1,6 @@
 ﻿using gcstats.Configuration;
 using MediatR;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,41 +8,22 @@ using System.Threading.Tasks;
 
 namespace gcstats.Queries
 {
-    public static class GetAllMissingPages
+    public static class GetPagesByIndexIds
     {
         public class Request : IRequest
         {
-            public Request(int tallyingPeriodId)
+            public Request(IEnumerable<long> indexIds)
             {
-                TallyingPeriodId = tallyingPeriodId;
+                IndexIds = indexIds;
             }
-            public Func<ConcurrentQueue<Tuple<long, string>>, Func<bool>, Task> Callback { get; set; }
             public int MaxActiveRequests { get; set; } = 6;
-            public int TallyingPeriodId { get; }
+            public IEnumerable<long> IndexIds { get; }
         }
 
         public class Handler : IRequestHandler<Request>
         {
             private readonly IMediator mediator;
             private readonly ILogger logger;
-            private readonly object isFetchingLock = new object();
-            private bool isFetching;
-
-            private bool GetIsFetching()
-            {
-                lock (isFetchingLock)
-                {
-                    return isFetching;
-                }
-            }
-
-            private void SetIsFetching(bool value)
-            {
-                lock (isFetchingLock)
-                {
-                    isFetching = value;
-                }
-            }
 
             public Handler(IMediator mediator, ILogger logger)
             {
@@ -53,20 +33,16 @@ namespace gcstats.Queries
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                var results = new ConcurrentQueue<Tuple<long, string>>();
                 var activeRequests = new List<Tuple<long, Task<string>>>();
-                var indexIds = new Queue<long>(await mediator.Send(new GetMissingIndexIds.Request(request.TallyingPeriodId)));
 
-                if (!indexIds.Any())
+                if (!request.IndexIds.Any())
                 {
+                    logger.WriteLine("No indexIds found. Skipping...");
+
                     return Unit.Value;
                 }
 
-                SetIsFetching(true);
-                var callback = request.Callback(results, GetIsFetching);
-                activeRequests.Clear();
-
-                while (indexIds.TryDequeue(out var indexId))
+                foreach(var indexId in request.IndexIds)
                 {
                     while (activeRequests.Count >= request.MaxActiveRequests)
                     {
@@ -76,7 +52,8 @@ namespace gcstats.Queries
                         {
                             if (activeRequest.Item2.IsCompletedSuccessfully)
                             {
-                                results.Enqueue(new Tuple<long, string>(activeRequest.Item1, activeRequest.Item2.Result));
+                                await Publish(activeRequest);
+
                                 activeRequests.Remove(activeRequest);
                             }
                         }
@@ -94,15 +71,19 @@ namespace gcstats.Queries
 
                 await Task.WhenAll(activeRequests.Select(x => x.Item2));
 
-                foreach (var activeRequest in activeRequests.ToArray())
+                foreach (var activeRequest in activeRequests)
                 {
-                    results.Enqueue(new Tuple<long, string>(activeRequest.Item1, activeRequest.Item2.Result));
+                    await Publish(activeRequest);
                 }
 
-                SetIsFetching(false);
-                await callback;
-
                 return Unit.Value;
+            }
+
+            private async Task Publish(Tuple<long, Task<string>> pageResult)
+            {
+                await mediator.Publish(new PageDownloaded.Notification(
+                    pageResult.Item1,
+                    await mediator.Send(new TrimPageData.Request(await pageResult.Item2))));
             }
         }
     }
