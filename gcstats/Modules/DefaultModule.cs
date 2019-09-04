@@ -10,7 +10,6 @@ namespace gcstats.Modules
             builder.RegisterModule<ConfigurationModule>();
             builder.RegisterModule<MediatRModule>();
             builder.RegisterModule<HtmlParserModule>();
-            builder.RegisterModule<SQLiteModule>();
             builder.RegisterModule<HttpClientModule>();
             builder.RegisterModule<HtmlMinifierModule>();
             builder.RegisterModule<LoggerModule>();

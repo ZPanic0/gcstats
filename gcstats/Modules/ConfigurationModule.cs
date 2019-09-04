@@ -22,12 +22,12 @@ namespace gcstats.Modules
                 .SingleInstance();
 
             builder
-                .RegisterInstance(appSettings.DatabaseSettings)
+                .RegisterInstance(appSettings.Paths)
                 .AsSelf()
                 .SingleInstance();
 
             builder
-                .RegisterInstance(appSettings.Paths)
+                .RegisterInstance(appSettings.ProtobufSettings)
                 .AsSelf()
                 .SingleInstance();
         }
