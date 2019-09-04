@@ -1,7 +1,6 @@
 ﻿using gcstats.Configuration;
 using gcstats.Configuration.Models;
 using MediatR;
-using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +28,12 @@ namespace gcstats.Commands
                 {
                     logger.WriteLine("Creating pages directory...");
                     Directory.CreateDirectory($"{appSettings.BaseDirectory}/pages/");
+                }
+
+                var protobufDirectory = $"{appSettings.BaseDirectory}/protobuf/";
+                if (!Directory.Exists(protobufDirectory))
+                {
+                    Directory.CreateDirectory(protobufDirectory);
                 }
 
                 return Unit.Task;
