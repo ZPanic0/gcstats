@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using gcstats.Configuration;
 using MediatR;
 
 namespace gcstats.Modules
@@ -8,12 +9,12 @@ namespace gcstats.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder
-                .RegisterType<Mediator>()
+                .RegisterType<ParallelPublishMediator>()
                 .As<IMediator>()
                 .SingleInstance();
 
             builder
-                .Register<ServiceFactory>(context => 
+                .Register<ServiceFactory>(context =>
                     context.Resolve<IComponentContext>().Resolve);
 
             builder
