@@ -39,7 +39,7 @@ namespace gcstats.Queries
                 }
 
                 tallyingPeriodIds = tallyingPeriodIds
-                    .Concat(Enumerable.Range(lastTallyingPeriodYear * 100 + 1, lastTallyingPeriodId));
+                    .Concat(Enumerable.Range(lastTallyingPeriodYear * 100 + 1, lastTallyingPeriodId % (lastTallyingPeriodYear * 100)));
 
                 return tallyingPeriodIds;
             }
