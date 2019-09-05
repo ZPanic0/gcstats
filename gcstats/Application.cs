@@ -1,9 +1,13 @@
 using gcstats.Commands;
-using gcstats.Commands.Database;
+using gcstats.Common;
 using gcstats.Configuration;
+using gcstats.Configuration.Models;
 using gcstats.Queries;
 using MediatR;
-using System.Data;
+using ProtoBuf;
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,58 +16,80 @@ namespace gcstats
     public class Application
     {
         private readonly IMediator mediator;
+        private readonly AppSettings appSettings;
+        private readonly PageCache pageCache;
         private readonly ILogger logger;
-        private readonly IDbConnection connection;
 
-        public Application(IMediator mediator, ILogger logger, IDbConnection connection)
+        public Application(IMediator mediator, AppSettings appSettings, PageCache pageCache, ILogger logger)
         {
             this.mediator = mediator;
+            this.appSettings = appSettings;
+            this.pageCache = pageCache;
             this.logger = logger;
-            this.connection = connection;
         }
 
         internal async Task Execute()
         {
-            await Task.WhenAll(
-                mediator.Send(new SetupTables.Request()),
-                mediator.Send(new SetupFileStructure.Request()));
+            await mediator.Send(new SetupFileStructure.Request());
 
-            var tallyingPeriodIds = (await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request()))
-                .Except(await mediator.Send(new GetCompletedTallyingPeriodIds.Request()));
-
-            int activeParseRequestTallyingPeriodId = 0;
-            Task activeParseRequest = null;
+            var tallyingPeriodIds = await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request());
 
             foreach (var tallyingPeriodId in tallyingPeriodIds)
             {
-                logger.WriteLine($"Fetching TallyingPeriod {tallyingPeriodId}");
+                logger.WriteLine($"Processing TallyingPeriodId {tallyingPeriodId}...");
 
-                await mediator.Send(new UpsertScanProgress.Request(tallyingPeriodId, false));
+                var missingIndexIds = (await mediator.Send(new GetMissingIndexIds.Request(tallyingPeriodId))).ToArray();
 
-                await mediator.Send(new GetAllMissingPages.Request(tallyingPeriodId)
+                var filePath = string.Format(appSettings.ProtobufSettings.PathTemplate, Directory.GetCurrentDirectory(), tallyingPeriodId);
+
+                if (!missingIndexIds.Any() && File.Exists(filePath))
                 {
-                    Callback = (queue, getLockState) => mediator.Send(new SaveStreamedPageData.Request(getLockState, queue, 10000))
-                });
+                    try
+                    {
+                        using var fileStream = File.OpenRead(filePath);
 
-                if (activeParseRequest == null)
-                {
-                    logger.WriteLine($"Parsing TallyingPeriod {tallyingPeriodId}");
-                    activeParseRequest = mediator.Send(new ParseAndSavePages.Request(tallyingPeriodId));
-                    activeParseRequestTallyingPeriodId = tallyingPeriodId;
-                    continue;
+                        Serializer.Deserialize<IEnumerable<Player>>(fileStream);
+
+                        logger.WriteLine($"Both zip archive and protobuf cache for TallyingPeriodId {tallyingPeriodId} appear correct. Skipping...");
+                        continue;
+                    }
+                    catch (Exception)
+                    {
+                        logger.WriteLine($"Failed to deserialize protobuf cache file for TallyingPeriodId {tallyingPeriodId}");
+                        logger.WriteLine("Deleting file and recreating...");
+                    }
                 }
 
-                await activeParseRequest;
-                await mediator.Send(new UpsertScanProgress.Request(activeParseRequestTallyingPeriodId, true));
-                logger.WriteLine($"Parsing TallyingPeriod {tallyingPeriodId}");
-                activeParseRequest = mediator.Send(new ParseAndSavePages.Request(tallyingPeriodId));
-                activeParseRequestTallyingPeriodId = tallyingPeriodId;
+                logger.WriteLine($"Loading existing indexId files...");
+                await mediator.Send(new LoadFileToCache.Request(tallyingPeriodId));
+
+                logger.WriteLine($"Retrieving missing indexId pages...");
+                await mediator.Send(new GetPagesByIndexIds.Request(missingIndexIds));
+
+                var results = pageCache.ToArray().Select(result => new Tuple<long, string>(result.Key, result.Value));
+                pageCache.Clear();
+
+                var savePagesTask = Task.CompletedTask;
+
+                if (missingIndexIds.Any())
+                {
+                    logger.WriteLine("Saving pages...");
+                    savePagesTask = mediator.Send(new SavePagesToZip.Request(results));
+                }
+                else
+                {
+                    logger.WriteLine("No new pages were downloaded. Skipping archive save.");
+                }
+
+                var modelTask = mediator.Send(new GetPlayerModels.Request(results));
+
+                await Task.WhenAll(savePagesTask, modelTask);
+
+                logger.WriteLine("Saving protobuf cache file...");
+                await mediator.Send(new SavePlayerModelsToProtobufFile.Request(tallyingPeriodId, (await modelTask).PlayerResults));
+
+                logger.WriteLine($"Done processing for TallyingPeriodId {tallyingPeriodId}\n");
             }
-
-            await activeParseRequest;
-            await mediator.Send(new UpsertScanProgress.Request(activeParseRequestTallyingPeriodId, true));
-
-            connection.Close();
         }
     }
 }

@@ -37,6 +37,11 @@ namespace gcstats.Commands
                     appSettings.BaseDirectory,
                     request.TallyingPeriodId);
 
+                if (!File.Exists(path))
+                {
+                    return Unit.Value;
+                }
+
                 using var file = File.OpenRead(path);
                 using var archive = new ZipArchive(file, ZipArchiveMode.Read);
 
