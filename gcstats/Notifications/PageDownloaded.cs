@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using gcstats.Commands;
 using gcstats.Common;
 using MediatR;
 
@@ -21,18 +22,18 @@ namespace gcstats.Queries
 
         public static class Handlers
         {
-            public class CachePage : INotificationHandler<Notification>
+            public class SavePage : INotificationHandler<Notification>
             {
-                public CachePage(PageCache pageCache)
-                {
-                    PageCache = pageCache;
-                }
+                private readonly IWriteQueue<SavePageToZip.Request> queue;
 
-                public PageCache PageCache { get; }
+                public SavePage(IWriteQueue<SavePageToZip.Request> queue)
+                {
+                    this.queue = queue;
+                }
 
                 public Task Handle(Notification notification, CancellationToken cancellationToken)
                 {
-                    PageCache.Load(notification.IndexId, notification.Page);
+                    queue.Enqueue(new SavePageToZip.Request(notification.IndexId, notification.Page));
 
                     return Task.CompletedTask;
                 }

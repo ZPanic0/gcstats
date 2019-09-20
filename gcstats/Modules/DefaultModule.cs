@@ -15,11 +15,6 @@ namespace gcstats.Modules
             builder.RegisterModule<LoggerModule>();
 
             builder
-                .RegisterType<PageCache>()
-                .AsSelf()
-                .SingleInstance();
-
-            builder
                 .RegisterType<Application>()
                 .AsSelf()
                 .SingleInstance();
