@@ -9,8 +9,12 @@ namespace gcstats.Modules
         protected override void Load(ContainerBuilder builder)
         {
             builder
-                .RegisterType<PageWriteQueue>()
+                .RegisterType<RequestQueue<SavePageToZip.Request>>()
                 .As<IWriteQueue<SavePageToZip.Request>>();
+
+            builder
+                .RegisterType<RequestQueue<SavePageReport.Request>>()
+                .As<IWriteQueue<SavePageReport.Request>>();
         }
     }
 }
