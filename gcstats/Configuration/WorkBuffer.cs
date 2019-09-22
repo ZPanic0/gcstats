@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace gcstats.Common
+namespace gcstats.Configuration
 {
     /// <summary>
     /// Accepts work concurrently and processes it asynchronously on a single thread.

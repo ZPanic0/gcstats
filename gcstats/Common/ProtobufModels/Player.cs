@@ -2,7 +2,7 @@
 using ProtoBuf;
 using System.Collections.Generic;
 
-namespace gcstats.Configuration.Models
+namespace gcstats.Common.ProtobufModels
 {
     [ProtoContract]
     public class Player

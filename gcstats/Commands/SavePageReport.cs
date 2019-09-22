@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using gcstats.Common.Enums;
+using gcstats.Common.ProtobufModels;
 using gcstats.Configuration.Models;
 using MediatR;
 using ProtoBuf;

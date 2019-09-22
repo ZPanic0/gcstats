@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using gcstats.Common;
 using gcstats.Configuration;
 
 namespace gcstats.Modules

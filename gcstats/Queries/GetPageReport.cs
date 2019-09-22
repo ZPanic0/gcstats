@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using gcstats.Configuration.Models;
 using gcstats.Common.Enums;
+using gcstats.Common.ProtobufModels;
 
 namespace gcstats.Queries
 {

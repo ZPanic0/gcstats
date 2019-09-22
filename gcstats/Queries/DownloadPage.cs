@@ -1,5 +1,5 @@
-﻿using gcstats.Common.Enums;
-using gcstats.Configuration;
+﻿using gcstats.Common;
+using gcstats.Common.Enums;
 using gcstats.Configuration.Models;
 using MediatR;
 using System;

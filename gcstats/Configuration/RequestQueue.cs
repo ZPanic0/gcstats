@@ -1,9 +1,10 @@
-﻿using MediatR;
+﻿using gcstats.Common;
+using MediatR;
 using System.Threading.Tasks;
 
-namespace gcstats.Common
+namespace gcstats.Configuration
 {
-    class RequestQueue<T> : IWriteQueue<T> where T: IRequest
+    class RequestQueue<T> : IWriteQueue<T> where T : IRequest
     {
         private readonly WorkBuffer<T> buffer;
 

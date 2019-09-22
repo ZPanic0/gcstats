@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gcstats.Common;
+using System;
 
 namespace gcstats.Configuration
 {

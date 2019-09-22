@@ -1,4 +1,4 @@
-﻿namespace gcstats.Configuration
+﻿namespace gcstats.Common
 {
     public interface ILogger
     {

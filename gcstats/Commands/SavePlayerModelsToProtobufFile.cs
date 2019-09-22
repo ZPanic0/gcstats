@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using gcstats.Common.ProtobufModels;
 using gcstats.Configuration.Models;
 using MediatR;
 using ProtoBuf;

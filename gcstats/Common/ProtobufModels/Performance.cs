@@ -1,7 +1,7 @@
 ﻿using gcstats.Common.Enums;
 using ProtoBuf;
 
-namespace gcstats.Configuration.Models
+namespace gcstats.Common.ProtobufModels
 {
     [ProtoContract]
     public class Performance
