@@ -11,11 +11,13 @@ namespace gcstats.Modules
         {
             builder
                 .RegisterType<RequestQueue<SavePageToZip.Request>>()
-                .As<IWriteQueue<SavePageToZip.Request>>();
+                .As<IWriteQueue<SavePageToZip.Request>>()
+                .SingleInstance();
 
             builder
                 .RegisterType<RequestQueue<SavePageReport.Request>>()
-                .As<IWriteQueue<SavePageReport.Request>>();
+                .As<IWriteQueue<SavePageReport.Request>>()
+                .SingleInstance();
         }
     }
 }

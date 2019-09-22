@@ -13,6 +13,7 @@ namespace gcstats.Modules
             builder.RegisterModule<HttpClientModule>();
             builder.RegisterModule<HtmlMinifierModule>();
             builder.RegisterModule<LoggerModule>();
+            builder.RegisterModule<WriteQueueModule>();
 
             builder
                 .RegisterType<Sets>()
