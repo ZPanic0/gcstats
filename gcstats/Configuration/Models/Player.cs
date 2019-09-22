@@ -1,4 +1,4 @@
-﻿using gcstats.Common;
+﻿using gcstats.Common.Enums;
 using ProtoBuf;
 using System.Collections.Generic;
 

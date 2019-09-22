@@ -1,4 +1,4 @@
-﻿using gcstats.Common;
+﻿using gcstats.Common.Enums;
 using gcstats.Common.Extensions;
 using MediatR;
 using System;

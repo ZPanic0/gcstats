@@ -1,4 +1,4 @@
-﻿using gcstats.Common;
+﻿using gcstats.Common.Enums;
 using gcstats.Configuration.Models;
 using HtmlAgilityPack;
 using MediatR;

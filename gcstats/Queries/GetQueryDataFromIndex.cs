@@ -1,4 +1,4 @@
-﻿using gcstats.Common;
+﻿using gcstats.Common.Enums;
 using MediatR;
 using System.Threading;
 using System.Threading.Tasks;

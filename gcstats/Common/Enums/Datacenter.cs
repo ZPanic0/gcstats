@@ -1,4 +1,4 @@
-﻿namespace gcstats.Common
+﻿namespace gcstats.Common.Enums
 {
     public enum Datacenter
     {

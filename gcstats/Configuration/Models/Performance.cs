@@ -1,4 +1,4 @@
-﻿using gcstats.Common;
+﻿using gcstats.Common.Enums;
 using ProtoBuf;
 
 namespace gcstats.Configuration.Models

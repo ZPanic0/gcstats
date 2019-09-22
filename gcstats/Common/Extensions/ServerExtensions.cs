@@ -1,4 +1,5 @@
-﻿using System;
+﻿using gcstats.Common.Enums;
+using System;
 
 namespace gcstats.Common.Extensions
 {

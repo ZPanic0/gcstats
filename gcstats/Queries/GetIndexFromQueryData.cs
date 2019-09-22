@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using gcstats.Common;
+using gcstats.Common.Enums;
 using MediatR;
 
 namespace gcstats.Queries
