@@ -2,6 +2,7 @@
 {
     public class ProtobufSettings
     {
-        public string PathTemplate { get; set; }
+        public string CachePathTemplate { get; set; }
+        public string OutputPathTemplate { get; set; }
     }
 }

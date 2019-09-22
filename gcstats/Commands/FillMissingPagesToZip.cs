@@ -35,7 +35,7 @@ namespace gcstats.Commands
 
                     var missingIndexIds = (await mediator.Send(new GetMissingIndexIds.Request(tallyingPeriodId))).ToArray();
 
-                    var filePath = string.Format(appSettings.ProtobufSettings.PathTemplate, appSettings.BaseDirectory, tallyingPeriodId);
+                    var filePath = string.Format(appSettings.ProtobufSettings.OutputPathTemplate, appSettings.BaseDirectory, tallyingPeriodId);
 
                     await mediator.Send(new GetPagesByIndexIds.Request(missingIndexIds));
                 }

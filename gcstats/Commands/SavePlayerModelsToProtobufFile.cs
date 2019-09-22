@@ -32,7 +32,7 @@ namespace gcstats.Commands
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
                 using var fileStream = File.Open(
-                    string.Format(settings.ProtobufSettings.PathTemplate, settings.BaseDirectory, request.TallyingPeriodId),
+                    string.Format(settings.ProtobufSettings.OutputPathTemplate, settings.BaseDirectory, request.TallyingPeriodId),
                     FileMode.OpenOrCreate,
                     FileAccess.Write,
                     FileShare.None);

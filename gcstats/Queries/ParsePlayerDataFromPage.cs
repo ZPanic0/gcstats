@@ -59,7 +59,6 @@ namespace gcstats.Queries
 
                 var rows = document.DocumentNode.SelectNodes(pathSettings.BasePath) ?? Enumerable.Empty<HtmlNode>();
 
-
                 return rows.Select(row => GetResult(request.TargetFaction, row)).ToArray();
             }
 
