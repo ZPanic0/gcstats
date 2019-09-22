@@ -15,6 +15,10 @@ namespace gcstats.Modules
             builder.RegisterModule<LoggerModule>();
 
             builder
+                .RegisterType<Sets>()
+                .AsSelf();
+
+            builder
                 .RegisterType<Application>()
                 .AsSelf()
                 .SingleInstance();

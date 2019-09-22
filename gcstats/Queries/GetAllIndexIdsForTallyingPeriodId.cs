@@ -1,9 +1,7 @@
-﻿using gcstats.Common.Enums;
-using gcstats.Common.Extensions;
+﻿using gcstats.Common;
+using gcstats.Common.Enums;
 using MediatR;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,10 +22,12 @@ namespace gcstats.Queries
         public class Handler : IRequestHandler<Request, IEnumerable<long>>
         {
             private readonly IMediator mediator;
+            private readonly Sets sets;
 
-            public Handler(IMediator mediator)
+            public Handler(IMediator mediator, Sets sets)
             {
                 this.mediator = mediator;
+                this.sets = sets;
             }
 
             public Task<IEnumerable<long>> Handle(Request request, CancellationToken cancellationToken)
@@ -37,10 +37,10 @@ namespace gcstats.Queries
 
             private IEnumerable<long> GetIndexIdRequests(int tallyingPeriodId)
             {
-                foreach (var datacenter in ((Datacenter[])Enum.GetValues(typeof(Datacenter))).Skip(1))
-                    foreach (var server in datacenter.GetServers())
-                        foreach (var faction in ((Faction[])Enum.GetValues(typeof(Faction))).Skip(1))
-                            foreach (var page in Enumerable.Range(1, 5))
+                foreach (var datacenter in sets.Datacenters)
+                    foreach (var server in sets.Servers[datacenter])
+                        foreach (var faction in sets.Factions)
+                            foreach (var page in sets.PageNumbers)
                                 yield return mediator.Send(new GetIndexFromQueryData.Request(
                                     tallyingPeriodId,
                                     TimePeriod.Weekly,
