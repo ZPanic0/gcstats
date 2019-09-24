@@ -1,4 +1,4 @@
-﻿using gcstats.Common;
+using gcstats.Common;
 using gcstats.Configuration.Models;
 using MediatR;
 using System.IO;
@@ -46,7 +46,7 @@ namespace gcstats.Commands
 
             private void CreateProtobufCacheFiles()
             {
-                foreach (var server in sets.Servers.Values.SelectMany(x => x))
+                    foreach (var server in sets.Servers.All)
                 {
                     var filePath = string.Format(appSettings.ProtobufSettings.CachePathTemplate, appSettings.BaseDirectory, server);
                     if (!File.Exists(filePath))

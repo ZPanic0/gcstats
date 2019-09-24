@@ -38,7 +38,7 @@ namespace gcstats.Queries
             private IEnumerable<long> GetIndexIdRequests(int tallyingPeriodId)
             {
                 foreach (var datacenter in sets.Datacenters)
-                    foreach (var server in sets.Servers[datacenter])
+                    foreach (var server in sets.Servers.Dictionary[datacenter])
                         foreach (var faction in sets.Factions)
                             foreach (var page in sets.PageNumbers)
                                 yield return mediator.Send(new GetIndexFromQueryData.Request(

@@ -2,6 +2,7 @@
 using gcstats.Common.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace gcstats.Common
@@ -11,26 +12,25 @@ namespace gcstats.Common
         public Sets()
         {
             Datacenters = ((Datacenter[])Enum.GetValues(typeof(Datacenter))).Skip(1).ToArray();
-            Servers = BuildServersDictionary();
+            Servers = BuildServers();
             Factions = ((Faction[])Enum.GetValues(typeof(Faction))).Skip(1).ToArray();
             PageNumbers = Enumerable.Range(1, 5).ToArray();
         }
 
         public IEnumerable<Datacenter> Datacenters { get; }
-        public Dictionary<Datacenter, IEnumerable<Server>> Servers { get; }
+        public (ReadOnlyDictionary<Datacenter, ReadOnlyCollection<Server>> Dictionary, ReadOnlyCollection<Server> All) Servers { get; }
         public IEnumerable<Faction> Factions { get; }
         public IEnumerable<int> PageNumbers { get; }
 
-        private Dictionary<Datacenter, IEnumerable<Server>> BuildServersDictionary()
+        private (ReadOnlyDictionary<Datacenter, ReadOnlyCollection<Server>> Dictionary, ReadOnlyCollection<Server> All) BuildServers()
         {
-            var dictionary = new Dictionary<Datacenter, IEnumerable<Server>>();
+            var dictionary = Datacenters.ToDictionary(
+                datacenter => datacenter, 
+                datacenter => new ReadOnlyCollection<Server>(datacenter.GetServers().ToArray()));
 
-            foreach (var datacenter in Datacenters)
-            {
-                dictionary.Add(datacenter, datacenter.GetServers().ToArray());
-            }
-
-            return dictionary;
+            return (
+                Dictionary: new ReadOnlyDictionary<Datacenter, ReadOnlyCollection<Server>>(dictionary), 
+                All: new ReadOnlyCollection<Server>(dictionary.Values.SelectMany(x => x).ToList()));
         }
     }
 }
