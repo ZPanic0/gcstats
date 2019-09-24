@@ -18,5 +18,7 @@ namespace gcstats.Configuration
         public void Enqueue(T request) => buffer.Add(request);
 
         public void Close() => buffer.Close();
+
+        public bool Any() => buffer.Any();
     }
 }

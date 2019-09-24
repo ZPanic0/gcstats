@@ -7,5 +7,6 @@ namespace gcstats.Common
         Task Start();
         void Enqueue(T request);
         void Close();
+        bool Any();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace gcstats.Configuration
@@ -31,5 +32,7 @@ namespace gcstats.Configuration
         public void Add(T workItem) => workItems.Add(workItem);
 
         public void Close() => workItems.CompleteAdding();
+
+        public bool Any() => workItems.Any();
     }
 }
