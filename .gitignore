@@ -262,3 +262,7 @@ __pycache__/
 gcstats/proxydetails\.json
 
 *.pubxml
+
+#Gatsby branch artifacts
+.cache/
+public/
