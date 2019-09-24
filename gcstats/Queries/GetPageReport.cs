@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using gcstats.Common.Enums;
 using gcstats.Common.ProtobufModels;
+using System.Linq;
 
 namespace gcstats.Queries
 {
@@ -48,11 +49,11 @@ namespace gcstats.Queries
                 return new PageReport
                 {
                     IndexId = request.IndexId,
-                    Players = ConvertToPlayerRecords(performances)
+                    Players = ConvertToPlayerRecords(request.IndexId, performances)
                 };
             }
 
-            private IEnumerable<Player> ConvertToPlayerRecords(IEnumerable<ParsePlayerDataFromPage.Result> performances)
+            private List<Player> ConvertToPlayerRecords(long indexId, IEnumerable<ParsePlayerDataFromPage.Result> performances)
             {
                 var results = new Dictionary<int, Player>();
 
@@ -76,11 +77,12 @@ namespace gcstats.Queries
                     {
                         Faction = performance.TargetFaction,
                         Rank = performance.Rank,
-                        Score = performance.CompanySeals
+                        Score = performance.CompanySeals,
+                        IndexId = indexId
                     });
                 }
 
-                return results.Values;
+                return results.Values.ToList();
             }
         }
     }
