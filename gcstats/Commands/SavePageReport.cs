@@ -38,7 +38,7 @@ namespace gcstats.Commands
                     string.Format(appSettings.ProtobufSettings.CachePathTemplate, appSettings.BaseDirectory, request.Server), 
                     FileMode.Append);
 
-                Serializer.Serialize(fileStream, request.Report);
+                Serializer.Serialize(fileStream, new[] { request.Report });
 
                 return Unit.Task;
             }
