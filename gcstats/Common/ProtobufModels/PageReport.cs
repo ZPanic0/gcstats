@@ -9,6 +9,6 @@ namespace gcstats.Common.ProtobufModels
         [ProtoMember(1)]
         public long IndexId { get; set; }
         [ProtoMember(2)]
-        public IEnumerable<Player> Players { get; set; }
+        public List<Player> Players { get; set; }
     }
 }

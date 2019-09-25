@@ -8,22 +8,24 @@ using gcstats.Configuration.Models;
 using MediatR;
 using ProtoBuf;
 
-namespace gcstats.Queries
+namespace gcstats.Commands
 {
-    public class GetCachedPageReportsByServer
+    public class SavePageReports
     {
-        public class Request : IRequest<IEnumerable<PageReport>> {
-            public Request(Server server, int tallyingPeriodId)
+        public class Request : IRequest {
+            public Request(IEnumerable<PageReport> reports, Server server, int tallyingPeriodId)
             {
+                Reports = reports;
                 Server = server;
                 TallyingPeriodId = tallyingPeriodId;
             }
 
+            public IEnumerable<PageReport> Reports { get; }
             public Server Server { get; }
             public int TallyingPeriodId { get; }
         }
 
-        public class Handler : IRequestHandler<Request, IEnumerable<PageReport>>
+        public class Handler : IRequestHandler<Request>
         {
             private readonly AppSettings appSettings;
 
@@ -32,15 +34,19 @@ namespace gcstats.Queries
                 this.appSettings = appSettings;
             }
 
-            public Task<IEnumerable<PageReport>> Handle(Request request, CancellationToken cancellationToken)
+            public Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                using var fileStream = File.OpenRead(string.Format(
+                using var fileStream = File.Open(
+                    string.Format(
                         appSettings.ProtobufSettings.CachePathTemplate,
                         appSettings.BaseDirectory,
                         request.Server,
-                        request.TallyingPeriodId));
+                        request.TallyingPeriodId),
+                    FileMode.Append);
 
-                return Task.FromResult(Serializer.Deserialize<IEnumerable<PageReport>>(fileStream));
+                Serializer.Serialize(fileStream, request.Reports);
+
+                return Unit.Task;
             }
         }
     }

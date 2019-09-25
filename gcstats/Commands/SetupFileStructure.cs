@@ -1,8 +1,8 @@
-using gcstats.Common;
+﻿using gcstats.Common;
 using gcstats.Configuration.Models;
+using gcstats.Queries;
 using MediatR;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,42 +17,57 @@ namespace gcstats.Commands
             private readonly AppSettings appSettings;
             private readonly ILogger logger;
             private readonly Sets sets;
+            private readonly IMediator mediator;
 
-            public Handler(AppSettings appSettings, ILogger logger, Sets sets)
+            public Handler(AppSettings appSettings, ILogger logger, Sets sets, IMediator mediator)
             {
                 this.appSettings = appSettings;
                 this.logger = logger;
                 this.sets = sets;
+                this.mediator = mediator;
             }
-            public Task<Unit> Handle(Request request, CancellationToken cancellationToken)
+            public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                CreateDirectoryIfNotExists($"{appSettings.BaseDirectory}/pages/");
-                CreateDirectoryIfNotExists($"{appSettings.BaseDirectory}/cache/");
-                CreateDirectoryIfNotExists($"{appSettings.BaseDirectory}/out/");
+                logger.WriteLine("Checking for missing files and folders and rebuilding...");
+                Directory.CreateDirectory($"{appSettings.BaseDirectory}/pages/");
+                Directory.CreateDirectory($"{appSettings.BaseDirectory}/cache/");
+                Directory.CreateDirectory($"{appSettings.BaseDirectory}/out/");
 
-                CreateProtobufCacheFiles();
+                CreateProtobufCacheFolders();
+                await CreateProtobufCacheFiles();
 
-                return Unit.Task;
+                logger.WriteLine("Done building file and folder structure.");
+
+                return Unit.Value;
             }
 
-            private void CreateDirectoryIfNotExists(string directoryPath)
+            private void CreateProtobufCacheFolders()
             {
-                if (!Directory.Exists(directoryPath))
+                foreach (var server in sets.Servers.All)
                 {
-                    logger.WriteLine($"Directory {directoryPath} not found. Creating...");
-                    Directory.CreateDirectory(directoryPath);
+                    Directory.CreateDirectory($"{appSettings.BaseDirectory}/cache/{server}/");
                 }
             }
 
-            private void CreateProtobufCacheFiles()
+            private async Task CreateProtobufCacheFiles()
             {
-                    foreach (var server in sets.Servers.All)
+                foreach (var server in sets.Servers.All)
                 {
-                    var filePath = string.Format(appSettings.ProtobufSettings.CachePathTemplate, appSettings.BaseDirectory, server);
-                    if (!File.Exists(filePath))
+                    Directory.CreateDirectory($"{appSettings.BaseDirectory}/cache/{server}/");
+
+                    foreach (var tallyingPeriodId in await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request()))
                     {
-                        logger.WriteLine($"File missing at {filePath}. Creating...");
-                        using var fileStream = File.Create(filePath);
+
+                        var filePath = string.Format(
+                            appSettings.ProtobufSettings.CachePathTemplate,
+                            appSettings.BaseDirectory,
+                            server,
+                            tallyingPeriodId);
+
+                        if (!File.Exists(filePath))
+                        {
+                            File.Create(filePath).Close();
+                        }
                     }
                 }
             }

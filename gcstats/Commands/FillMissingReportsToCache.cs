@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using gcstats.Common;
+using gcstats.Common.Enums;
 using gcstats.Common.ProtobufModels;
-using gcstats.Configuration.Models;
 using gcstats.Queries;
 using MediatR;
-using ProtoBuf;
 
 namespace gcstats.Commands
 {
@@ -18,29 +16,61 @@ namespace gcstats.Commands
 
         public class Handler : IRequestHandler<Request>
         {
-            private readonly IWriteQueue<SavePageReport.Request> protobufCacheQueue;
+            private readonly IWriteQueue<SavePageReports.Request> protobufCacheQueue;
             private readonly Sets sets;
-            private readonly AppSettings appSettings;
             private readonly IMediator mediator;
-            private readonly ILogger logger;
 
-            public Handler(IWriteQueue<SavePageReport.Request> protobufCacheQueue, Sets sets, AppSettings appSettings, IMediator mediator, ILogger logger)
+            public Handler(IWriteQueue<SavePageReports.Request> protobufCacheQueue,
+                Sets sets,
+                IMediator mediator)
             {
                 this.protobufCacheQueue = protobufCacheQueue;
                 this.sets = sets;
-                this.appSettings = appSettings;
                 this.mediator = mediator;
-                this.logger = logger;
             }
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
+            {
+                await AwaitQueueCatchUp();
+
+                var queueTask = protobufCacheQueue.Start();
+                var tasks = new List<Task>();
+                var tallyingPeriodIds = (await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request())).ToArray();
+
+                var workGroups = sets.Servers.All.Select((server, index) => (server, index)).GroupBy(x => x.index % 4);
+
+                foreach (var group in workGroups)
+                {
+                    tasks.Add(Task.Run(() => Task.WhenAll(group.Select(x => ProcessServer(x.server, tallyingPeriodIds)))));
+                }
+
+                await Task.WhenAll(tasks);
+
+                protobufCacheQueue.Close();
+                await queueTask;
+
+                return Unit.Value;
+            }
+
+            private async Task AwaitQueueCatchUp()
             {
                 while (protobufCacheQueue.Any())
                 {
                     await Task.Delay(100);
                 }
+            }
 
-                Parallel.ForEach(await GetAllMissingIndexIds(), async indexId =>
+            private async Task Process(int tallyingPeriodId, Server server)
+            {
+                var reports = new List<PageReport>();
+
+                var indexIds = await mediator.Send(
+                    new GetFilteredIndexIds.Request(tallyingPeriodId)
+                    {
+                        Servers = new[] { server }
+                    });
+
+                await foreach (var indexId in indexIds)
                 {
                     var data = await mediator.Send(new GetQueryDataFromIndex.Request(indexId));
 
@@ -48,42 +78,18 @@ namespace gcstats.Commands
 
                     var report = await mediator.Send(new GetPageReport.Request(data.Faction, indexId, page));
 
-                    logger.WriteLine($"Saving report for IndexId {indexId}");
-                    protobufCacheQueue.Enqueue(new SavePageReport.Request(report, data.Server));
-                });
-
-                return Unit.Value;
-            }
-
-            private async Task<IEnumerable<long>> GetIndexIdsFromCache()
-            {
-                var indexIds = new List<long>();
-
-                foreach (var server in sets.Servers.Values.SelectMany(x => x))
-                {
-                    indexIds.AddRange(
-                        (await mediator.Send(new GetCachedPageReportsByServer.Request(server)))
-                        .Select(x => x.IndexId));
+                    reports.Add(report);
                 }
 
-                return indexIds;
+                protobufCacheQueue.Enqueue(new SavePageReports.Request(reports, server, tallyingPeriodId));
             }
 
-            private async Task<IEnumerable<long>> GetAllMissingIndexIds()
+            private async Task ProcessServer(Server server, IEnumerable<int> tallyingPeriodIds)
             {
-                var existingIndexIds = await GetIndexIdsFromCache();
-
-                var indexIds = new List<long>();
-
-                foreach (var tallyingPeriodId in await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request()))
+                foreach (var tallyingPeriodId in tallyingPeriodIds)
                 {
-                    var allIndexIds = await mediator.Send(
-                            new GetAllIndexIdsForTallyingPeriodId.Request(tallyingPeriodId));
-
-                    indexIds.AddRange(allIndexIds.Except(existingIndexIds));
+                    await Process(tallyingPeriodId, server);
                 }
-
-                return indexIds;
             }
         }
     }

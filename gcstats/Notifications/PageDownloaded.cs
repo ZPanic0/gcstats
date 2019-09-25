@@ -56,7 +56,7 @@ namespace gcstats.Queries
 
                     var report = await mediator.Send(new GetPageReport.Request(queryData.Faction, notification.IndexId, notification.Page));
 
-                    queue.Enqueue(new SavePageReport.Request(report, queryData.Server));
+                    queue.Enqueue(new SavePageReport.Request(report));
                 }
             }
         }
