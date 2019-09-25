@@ -31,9 +31,6 @@ namespace gcstats.Commands
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
-                await AwaitQueueCatchUp();
-
-                var queueTask = protobufCacheQueue.Start();
                 var tasks = new List<Task>();
                 var tallyingPeriodIds = (await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request())).ToArray();
 
@@ -46,18 +43,7 @@ namespace gcstats.Commands
 
                 await Task.WhenAll(tasks);
 
-                protobufCacheQueue.Close();
-                await queueTask;
-
                 return Unit.Value;
-            }
-
-            private async Task AwaitQueueCatchUp()
-            {
-                while (protobufCacheQueue.Any())
-                {
-                    await Task.Delay(100);
-                }
             }
 
             private async Task Process(int tallyingPeriodId, Server server)
