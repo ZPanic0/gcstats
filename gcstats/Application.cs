@@ -1,7 +1,5 @@
 using gcstats.Commands;
 using gcstats.Common;
-using gcstats.Configuration;
-using gcstats.Configuration.Models;
 using MediatR;
 using System.Threading.Tasks;
 
@@ -10,28 +8,41 @@ namespace gcstats
     public class Application
     {
         private readonly IMediator mediator;
-        private readonly AppSettings appSettings;
-        private readonly IWriteQueue<SavePageToZip.Request> queue;
-        private readonly ILogger logger;
+        private readonly IWriteQueue<SavePageToZip.Request> zipQueue;
+        private readonly IWriteQueue<SavePageReport.Request> protobufCacheQueue;
+        private readonly IWriteQueue<SavePageReports.Request> bulkProtobufCacheQueue;
 
-        public Application(IMediator mediator, AppSettings appSettings, IWriteQueue<SavePageToZip.Request> queue, ILogger logger)
+        public Application(
+            IMediator mediator,
+            IWriteQueue<SavePageToZip.Request> zipQueue,
+            IWriteQueue<SavePageReport.Request> protobufCacheQueue,
+            IWriteQueue<SavePageReports.Request> bulkProtobufCacheQueue)
         {
             this.mediator = mediator;
-            this.appSettings = appSettings;
-            this.queue = queue;
-            this.logger = logger;
+            this.zipQueue = zipQueue;
+            this.protobufCacheQueue = protobufCacheQueue;
+            this.bulkProtobufCacheQueue = bulkProtobufCacheQueue;
         }
 
         internal async Task Execute()
         {
             await mediator.Send(new SetupFileStructure.Request());
 
-            var queueTask = queue.Start();
+            var zipQueueTask = Task.Run(() => zipQueue.Start());
+            var protobufCacheQueueTask = Task.Run(() => protobufCacheQueue.Start());
 
             await mediator.Send(new FillMissingPagesToZip.Request());
 
-            queue.Close();
-            await queueTask;
+            zipQueue.Close();
+            protobufCacheQueue.Close();
+            await Task.WhenAll(zipQueueTask, protobufCacheQueueTask);
+
+            var bulkTask = bulkProtobufCacheQueue.Start();
+
+            await mediator.Send(new FillMissingReportsToCache.Request());
+
+            bulkProtobufCacheQueue.Close();
+            await bulkTask;
         }
     }
 }
