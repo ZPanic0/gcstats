@@ -27,18 +27,20 @@ namespace gcstats.Commands
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
+                logger.WriteLine("Filling pages to zip files.");
+
                 var tallyingPeriodIds = await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request());
 
                 foreach (var tallyingPeriodId in tallyingPeriodIds)
                 {
-                    logger.WriteLine($"Filling pages for TallyingPeriodId: {tallyingPeriodId}");
-
                     var missingIndexIds = (await mediator.Send(new GetMissingIndexIds.Request(tallyingPeriodId))).ToArray();
 
                     var filePath = string.Format(appSettings.ProtobufSettings.OutputPathTemplate, appSettings.BaseDirectory, tallyingPeriodId);
 
-                    await mediator.Send(new GetPagesByIndexIds.Request(missingIndexIds));
+                    await mediator.Send(new FetchPagesByIndexIds.Request(missingIndexIds));
                 }
+
+                logger.WriteLine("Done.");
 
                 return Unit.Value;
             }

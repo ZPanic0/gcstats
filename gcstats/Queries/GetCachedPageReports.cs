@@ -10,7 +10,7 @@ using ProtoBuf;
 
 namespace gcstats.Queries
 {
-    public class GetCachedPageReportsByServer
+    public class GetCachedPageReports
     {
         public class Request : IRequest<IEnumerable<PageReport>> {
             public Request(Server server, int tallyingPeriodId)

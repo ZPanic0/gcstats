@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace gcstats.Queries
 {
-    public static class GetPagesByIndexIds
+    public static class FetchPagesByIndexIds
     {
         public class Request : IRequest
         {
@@ -37,8 +37,6 @@ namespace gcstats.Queries
 
                 if (!request.IndexIds.Any())
                 {
-                    logger.WriteLine("No indexIds found. Skipping...");
-
                     return Unit.Value;
                 }
 
