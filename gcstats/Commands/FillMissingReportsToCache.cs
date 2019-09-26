@@ -19,18 +19,23 @@ namespace gcstats.Commands
             private readonly IWriteQueue<SavePageReports.Request> protobufCacheQueue;
             private readonly Sets sets;
             private readonly IMediator mediator;
+            private readonly ILogger logger;
 
             public Handler(IWriteQueue<SavePageReports.Request> protobufCacheQueue,
                 Sets sets,
-                IMediator mediator)
+                IMediator mediator,
+                ILogger logger)
             {
                 this.protobufCacheQueue = protobufCacheQueue;
                 this.sets = sets;
                 this.mediator = mediator;
+                this.logger = logger;
             }
 
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
+                logger.WriteLine("Filling PageReports to protobuf files...");
+
                 var tasks = new List<Task>();
                 var tallyingPeriodIds = (await mediator.Send(new GetTallyingPeriodIdsToCurrent.Request())).ToArray();
 
@@ -42,6 +47,8 @@ namespace gcstats.Commands
                 }
 
                 await Task.WhenAll(tasks);
+
+                logger.WriteLine("Done.");
 
                 return Unit.Value;
             }
