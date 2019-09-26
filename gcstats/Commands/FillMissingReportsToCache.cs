@@ -50,6 +50,8 @@ namespace gcstats.Commands
             {
                 var reports = new List<PageReport>();
 
+                var existingReports = await mediator.Send(new GetCachedPageReports.Request(server, tallyingPeriodId));
+
                 var indexIds = await mediator.Send(
                     new GetFilteredIndexIds.Request(tallyingPeriodId)
                     {
@@ -58,6 +60,11 @@ namespace gcstats.Commands
 
                 await foreach (var indexId in indexIds)
                 {
+                    if (existingReports.Any(report => report.IndexId == indexId))
+                    {
+                        continue;
+                    }
+
                     var data = await mediator.Send(new GetQueryDataFromIndex.Request(indexId));
 
                     var page = await mediator.Send(new GetPageFromZip.Request(indexId));
@@ -67,7 +74,10 @@ namespace gcstats.Commands
                     reports.Add(report);
                 }
 
-                protobufCacheQueue.Enqueue(new SavePageReports.Request(reports, server, tallyingPeriodId));
+                if (reports.Any())
+                {
+                    protobufCacheQueue.Enqueue(new SavePageReports.Request(reports, server, tallyingPeriodId));
+                }
             }
 
             private async Task ProcessServer(Server server, IEnumerable<int> tallyingPeriodIds)
