@@ -43,6 +43,8 @@ namespace gcstats
 
             bulkProtobufCacheQueue.Close();
             await bulkTask;
+
+            await mediator.Send(new BuildPlayerDataFilesFromCache.Request());
         }
     }
 }
