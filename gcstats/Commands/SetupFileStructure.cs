@@ -29,12 +29,16 @@ namespace gcstats.Commands
             public async Task<Unit> Handle(Request request, CancellationToken cancellationToken)
             {
                 logger.WriteLine("Checking for missing files and folders and rebuilding...");
+
                 Directory.CreateDirectory($"{appSettings.BaseDirectory}/pages/");
                 Directory.CreateDirectory($"{appSettings.BaseDirectory}/cache/");
-                Directory.CreateDirectory($"{appSettings.BaseDirectory}/out/");
+                Directory.CreateDirectory($"{appSettings.BaseDirectory}/indexes/");
+                Directory.CreateDirectory($"{appSettings.BaseDirectory}/players/");
 
                 CreateProtobufCacheFolders();
                 await CreateProtobufCacheFiles();
+                CreatePlayerGroupFiles();
+                CreateServerIndexFiles();
 
                 logger.WriteLine("Done building file and folder structure.");
 
@@ -69,6 +73,26 @@ namespace gcstats.Commands
                             File.Create(filePath).Close();
                         }
                     }
+                }
+            }
+
+            private void CreatePlayerGroupFiles()
+            {
+                for (var reportGroup = 0; reportGroup < 1000; reportGroup++)
+                {
+                    var filePath = string.Format(appSettings.ProtobufSettings.PlayerGroupTemplate, appSettings.BaseDirectory, reportGroup);
+
+                    File.Create(filePath).Close();
+                }
+            }
+
+            private void CreateServerIndexFiles()
+            {
+                foreach (var server in sets.Servers.All)
+                {
+                    var filePath = string.Format(appSettings.ProtobufSettings.IndexesTemplate, appSettings.BaseDirectory, server);
+
+                    File.Create(filePath).Close();
                 }
             }
         }
