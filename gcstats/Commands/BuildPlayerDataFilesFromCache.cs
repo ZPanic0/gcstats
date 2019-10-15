@@ -38,6 +38,11 @@ namespace gcstats.Commands
                 await AddToGroupStreams(playerDataStreams);
                 ConsolidatePlayerRecords(playerDataStreams);
                 BuildIndexFiles(playerDataStreams, serverIndexStreams);
+
+                await Task.WhenAll(
+                    Task.Run(() => SortPlayerRecordsByLodestoneId(playerDataStreams)),
+                    Task.Run(() => SortIndexFilesByLodestoneId(serverIndexStreams)));
+
                 CloseAllStreams(
                     playerDataStreams.Select(x => x.Value)
                     .Concat(serverIndexStreams.Select(x => x.Value)));
@@ -152,6 +157,38 @@ namespace gcstats.Commands
 
                         Serializer.Serialize<IEnumerable<Index>>(indexFiles[player.Server], exportSet);
                     }
+                }
+            }
+
+            private void SortPlayerRecordsByLodestoneId(Dictionary<int, FileStream> streams)
+            {
+                foreach (var streamGroup in streams)
+                {
+                    var fileStream = streamGroup.Value;
+
+                    fileStream.Seek(0, SeekOrigin.Begin);
+
+                    var players = Serializer.Deserialize<IEnumerable<Player>>(fileStream);
+
+                    fileStream.SetLength(0);
+
+                    Serializer.Serialize(fileStream, players.OrderBy(player => player.LodestoneId));
+                }
+            }
+
+            private void SortIndexFilesByLodestoneId(Dictionary<Server, FileStream> indexFiles)
+            {
+                foreach (var streamGroup in indexFiles)
+                {
+                    var fileStream = streamGroup.Value;
+
+                    fileStream.Seek(0, SeekOrigin.Begin);
+
+                    var indexes = Serializer.Deserialize<IEnumerable<Index>>(fileStream);
+
+                    fileStream.SetLength(0);
+
+                    Serializer.Serialize(fileStream, indexes.OrderBy(index => index.LodestoneId));
                 }
             }
 
