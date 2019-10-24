@@ -1,0 +1,16 @@
+a {
+  color: black;
+}
+a:hover {
+  color: black;
+  text-decoration-line: underline;
+}
+.maelstrom-gradient, .maelstrom-gradient.card {
+  background-image: linear-gradient(to right, white, #ffcccc)
+}
+.adder-gradient, .adder-gradient.card {
+  background-image: linear-gradient(to right, white, #ffffcc)
+}
+.flames-gradient, .flames-gradient.card {
+  background-image: linear-gradient(to right, white, #d9d9d9)
+}
