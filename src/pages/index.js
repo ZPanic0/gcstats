@@ -1,21 +1,62 @@
-import React from "react"
+import React, { Component } from "react"
 import { Link } from "gatsby"
+import protobuf from "protobufjs"
+import Layout from "../components/GatsbyDefault/layout"
+import SEO from "../components/GatsbyDefault/seo"
+import SearchBar from "../components/Search/SearchBar"
+import PlayerPanel from "../components/Player/PlayerPanel"
 
-import Layout from "../components/layout"
-import Image from "../components/image"
-import SEO from "../components/seo"
+export default class IndexPage extends Component {
+  constructor(props) {
+    super(props)
 
-const IndexPage = () => (
-  <Layout>
-    <SEO title="Home" />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <div style={{ maxWidth: `300px`, marginBottom: `1.45rem` }}>
-      <Image />
-    </div>
-    <Link to="/page-2/">Go to page 2</Link>
-  </Layout>
-)
+    this.handleSearchSelection = this.handleSearchSelection.bind(this)
 
-export default IndexPage
+    protobuf.load("/all.proto", (err, root) => {
+      this.setState({
+        indexMessage: root.lookupType("Indexes"),
+        playerMessage: root.lookupType("Players")
+      })
+    })
+  }
+
+  state = {
+    indexMessage: null,
+    playerMessage: null,
+    selectedLodestoneId: null,
+    selectedPlayer: null
+  }
+
+  handleSearchSelection(selectedLodestoneId) {
+    this.setState({ selectedLodestoneId })
+
+    this.fetchPlayers(selectedLodestoneId)
+  }
+
+  fetchPlayers(lodestoneId) {
+    const filePath = `/players/${lodestoneId % 1000}.bin`
+    fetch(filePath)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Http response returned error status while fetching ${filePath}`)
+        }
+        return response.arrayBuffer()
+      })
+      .then((buffer) => {
+        const message = this.state.playerMessage.decode(new Uint8Array(buffer));
+        this.setState({ selectedPlayer: message.PlayerEntries.find(player => player.LodestoneId === lodestoneId) })
+        console.log(this.state.selectedPlayer)
+      })
+  }
+
+  render() {
+    return (
+      <Layout>
+        <SEO title="Home" />
+        {this.state.indexMessage && <SearchBar handleSearchSelection={this.handleSearchSelection} IndexMessage={this.state.indexMessage} />}
+        {this.state.selectedPlayer && <PlayerPanel player={this.state.selectedPlayer} />}
+        <Link to="/page-2/">Go to page 2</Link>
+      </Layout>
+    )
+  }
+}
