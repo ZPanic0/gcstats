@@ -4,23 +4,41 @@ import SEO from "../components/GatsbyDefault/seo"
 import SearchBar from "../components/Search/SearchBar"
 import PlayerPanel from "../components/Player/PlayerPanel"
 import PlayerData from "../utilities/PlayerData"
+import QueryStringDictionary from "../utilities/QueryStringDictionary"
 
 export default class PlayerPage extends Component {
     constructor(props) {
         super(props)
-    
+
         this.handleSearchSelection = this.handleSearchSelection.bind(this)
-      }
-    
-      state = {
+
+        this.handleQueryString()
+    }
+
+    state = {
         selectedPlayer: null
-      }
-    
-      handleSearchSelection(selectedLodestoneId) {
+    }
+
+    handleQueryString() {
+        let lodestoneId = new QueryStringDictionary(this.props.location.search).get("id")
+
+        if (typeof lodestoneId !== "number") {
+            lodestoneId = Number(lodestoneId)
+        }
+
+        if (!lodestoneId || lodestoneId === 0) {
+            return
+        } else {
+            this.handleSearchSelection(lodestoneId)
+        }
+    }
+
+    handleSearchSelection(selectedLodestoneId) {
         new PlayerData()
-          .GetPlayer(selectedLodestoneId)
-          .then((selectedPlayer) => this.setState({ selectedPlayer }))
-      }
+            .GetPlayer(selectedLodestoneId)
+            .then((selectedPlayer) => this.setState({ selectedPlayer }))
+    }
+
     render() {
         return (
             <Layout>
