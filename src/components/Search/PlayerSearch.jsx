@@ -12,7 +12,8 @@ export default class PlayerSearch extends Component {
                 selection
                 value={this.props.value}
                 noResultsMessage={"Enter a character name."}
-                loading={this.props.isLoading}
+                loading={this.props.loading}
+                disabled={this.props.disabled}
             />
         )
     }

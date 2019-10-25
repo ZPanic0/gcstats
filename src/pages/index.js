@@ -12,14 +12,9 @@ export default class IndexPage extends Component {
     super(props)
 
     this.handleSearchSelection = this.handleSearchSelection.bind(this)
-
-    let messages = new Messages()
-
-    messages.get("Indexes").then((message) => this.setState({ indexMessage: message }))
   }
 
   state = {
-    indexMessage: null,
     selectedPlayer: null
   }
 
@@ -33,7 +28,7 @@ export default class IndexPage extends Component {
     return (
       <Layout>
         <SEO title="Home" />
-        {this.state.indexMessage && <SearchBar handleSearchSelection={this.handleSearchSelection} />}
+        <SearchBar handleSearchSelection={this.handleSearchSelection} />
         {this.state.selectedPlayer && <PlayerPanel player={this.state.selectedPlayer} />}
         <Link to="/page-2/">Go to page 2</Link>
       </Layout>

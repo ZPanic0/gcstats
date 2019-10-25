@@ -68,7 +68,8 @@ export default class SearchBar extends Component {
           handleSearchChange={this.handlePlayerSearchTextChange}
           players={this.state.playerSearchResults}
           value={this.state.selectedLodestoneId}
-          isLoading={this.state.playerListIsLoading}
+          loading={this.state.playerListIsLoading}
+          disabled={this.state.playerListIsLoading}
         />
       </div>
     )
