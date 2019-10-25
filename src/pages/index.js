@@ -5,7 +5,7 @@ import SEO from "../components/GatsbyDefault/seo"
 import SearchBar from "../components/Search/SearchBar"
 import PlayerPanel from "../components/Player/PlayerPanel"
 import Messages from "../utilities/Messages"
-import PlayerSource from "../utilities/PlayerSource"
+import PlayerData from "../utilities/PlayerData"
 
 export default class IndexPage extends Component {
   constructor(props) {
@@ -24,7 +24,7 @@ export default class IndexPage extends Component {
   }
 
   handleSearchSelection(selectedLodestoneId) {
-    new PlayerSource()
+    new PlayerData()
       .GetPlayer(selectedLodestoneId)
       .then((selectedPlayer) => this.setState({ selectedPlayer }))
   }
@@ -33,7 +33,7 @@ export default class IndexPage extends Component {
     return (
       <Layout>
         <SEO title="Home" />
-        {this.state.indexMessage && <SearchBar handleSearchSelection={this.handleSearchSelection} IndexMessage={this.state.indexMessage} />}
+        {this.state.indexMessage && <SearchBar handleSearchSelection={this.handleSearchSelection} />}
         {this.state.selectedPlayer && <PlayerPanel player={this.state.selectedPlayer} />}
         <Link to="/page-2/">Go to page 2</Link>
       </Layout>

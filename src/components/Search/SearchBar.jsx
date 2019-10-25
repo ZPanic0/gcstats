@@ -1,12 +1,12 @@
 import React, { Component } from "react"
 import ServerSearch from "./ServerSearch"
 import PlayerSearch from "./PlayerSearch"
+import PlayerIndex from "../../utilities/PlayerIndex"
 
 export default class SearchBar extends Component {
   constructor(props) {
     super(props)
 
-    this.fetchPlayerIndex = this.fetchPlayerIndex.bind(this)
     this.handleServerChange = this.handleServerChange.bind(this)
     this.handlePlayerSearchTextChange = this.handlePlayerSearchTextChange.bind(this)
     this.handlePlayerSelectionChange = this.handlePlayerSelectionChange.bind(this)
@@ -21,34 +21,25 @@ export default class SearchBar extends Component {
     playerListIsLoading: false
   }
 
-  fetchPlayerIndex(server) {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", `/indexes/${server}.bin`, true);
-    xhr.responseType = "arraybuffer";
-    xhr.onload = () => {
-      var message = this.props.IndexMessage.decode(new Uint8Array(xhr.response))
+  handleServerChange(e, { value }) {
+    this.setState({ 
+      selectedServer: value,
+      playerListIsLoading: true
+     })
 
-      var items = message.IndexEntries.map(item => {
-        return {
-          key: item.LodestoneId,
-          value: item.LodestoneId,
-          text: item.PlayerName,
-          lowercasetext: item.PlayerName.toLowerCase()
-        }
-      })
-
+    new PlayerIndex().GetIndex(value).then((indexItems) => {
       this.setState({
-        playerIndex: items,
+        playerIndex: indexItems.map((item) => {
+          return {
+            key: item.LodestoneId,
+            value: item.LodestoneId,
+            text: item.PlayerName,
+            lowercasetext: item.PlayerName.toLowerCase()
+          }
+        }),
         playerListIsLoading: false
       })
-    }
-    this.setState({ playerListIsLoading: true })
-    xhr.send(null);
-  }
-
-  handleServerChange(e, { value }) {
-    this.fetchPlayerIndex(value)
-    this.setState({ selectedServer: value })
+    })
   }
 
   handlePlayerSearchTextChange(event, data) {
