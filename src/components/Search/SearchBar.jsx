@@ -17,7 +17,6 @@ export default class SearchBar extends Component {
     playerSearchResults: [],
     selectedServer: "",
     selectedLodestoneId: "",
-    selectedPlayerName: "",
     playerListIsLoading: false
   }
 
@@ -42,10 +41,10 @@ export default class SearchBar extends Component {
     })
   }
 
-  handlePlayerSearchTextChange(event, data) {
-    const loweredQuery = data.searchQuery.toLowerCase()
+  handlePlayerSearchTextChange(event, { searchQuery }) {
+    const loweredQuery = searchQuery.toLowerCase()
     this.setState({
-      playerSearchResults: data.searchQuery.length < 3
+      playerSearchResults: searchQuery.length < 3
         ? []
         : this.state.playerIndex.filter(playerName => playerName.lowercasetext.includes(loweredQuery))
     })

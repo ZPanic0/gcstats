@@ -1,8 +1,8 @@
-import React from "react"
+import React, { Component } from "react"
 import { Dropdown } from "semantic-ui-react"
 import Servers from "../../utilities/Servers"
 
-export default class ServerSearch extends React.Component {
+export default class ServerSearch extends Component {
     constructor(props) {
         super(props)
 
