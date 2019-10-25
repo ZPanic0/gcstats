@@ -1,77 +1,6 @@
 import React, { Component } from "react"
 import { Card, Image } from 'semantic-ui-react'
-
-const servers = [
-    "NoInput",
-    "Aegis",
-    "Atomos",
-    "Carbuncle",
-    "Garuda",
-    "Gungnir",
-    "Kujata",
-    "Ramuh",
-    "Tonberry",
-    "Typhon",
-    "Unicorn",
-    "Alexander",
-    "Bahamut",
-    "Durandal",
-    "Fenrir",
-    "Ifrit",
-    "Ridill",
-    "Tiamat",
-    "Ultima",
-    "Valefor",
-    "Yojimbo",
-    "Zeromus",
-    "Anima",
-    "Asura",
-    "Belias",
-    "Chocobo",
-    "Hades",
-    "Ixion",
-    "Mandragora",
-    "Masamune",
-    "Pandaemonium",
-    "Shinryu",
-    "Titan",
-    "Adamantoise",
-    "Cactuar",
-    "Faerie",
-    "Gilgamesh",
-    "Jenova",
-    "Midgardsormr",
-    "Sargatanas",
-    "Siren",
-    "Behemoth",
-    "Excalibur",
-    "Exodus",
-    "Famfrit",
-    "Hyperion",
-    "Lamia",
-    "Leviathan",
-    "Ultros",
-    "Balmung",
-    "Brynhildr",
-    "Coeurl",
-    "Diabolos",
-    "Goblin",
-    "Malboro",
-    "Mateus",
-    "Zalera",
-    "Cerberus",
-    "Louisoix",
-    "Moogle",
-    "Omega",
-    "Ragnarok",
-    "Spriggan",
-    "Lich",
-    "Odin",
-    "Phoenix",
-    "Shiva",
-    "Twintania",
-    "Zodiark"
-]
+import Servers from "../../utilities/Servers"
 
 export default class PlayerCard extends Component {
     getDataCenter(serverId) {
@@ -208,7 +137,7 @@ export default class PlayerCard extends Component {
                         <a href={`https://na.finalfantasyxiv.com/lodestone/character/${this.props.LodestoneId}/`}>{this.props.PlayerName}</a>
                     </Card.Header>
                     <Card.Meta>
-                        <span>{servers[this.props.Server]} ({this.getDataCenter(this.props.Server)})</span>
+                        <span>{Servers[this.props.Server]} ({this.getDataCenter(this.props.Server)})</span>
                     </Card.Meta>
                     <Image
                         src={`https://xivapi.com/img-misc/gc/character_gc_${this.props.Faction}_${this.convertFactionRankToXivapiIndex(this.props.FactionRank)}.png`}
