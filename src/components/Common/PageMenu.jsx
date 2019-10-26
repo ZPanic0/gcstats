@@ -13,7 +13,7 @@ export default class PageMenu extends Component {
         const items = [
             <Menu.Item
                 key="leftChevron"
-                disabled={this.props.selectedPage < this.props.pages - 2}
+                disabled={this.props.selectedPage < this.props.pages - 2 || this.props.pages === 1}
                 as='a'
                 icon
                 value={-5}
@@ -44,7 +44,7 @@ export default class PageMenu extends Component {
         items.push(
             <Menu.Item
                 key="rightChevron"
-                disabled={this.props.selectedPage > 3}
+                disabled={this.props.selectedPage > 3 || this.props.pages === 1}
                 as='a'
                 icon
                 value={5}
