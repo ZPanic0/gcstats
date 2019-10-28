@@ -5,6 +5,7 @@ import SearchBar from "../components/Search/SearchBar"
 import PlayerPanel from "../components/Player/PlayerPanel"
 import PlayerData from "../utilities/PlayerData"
 import QueryStringDictionary from "../utilities/QueryStringDictionary"
+import { NavContext } from "../components/GatsbyDefault/layout"
 
 export default class PlayerPage extends Component {
     constructor(props) {
@@ -14,6 +15,12 @@ export default class PlayerPage extends Component {
 
         this.handleQueryString()
     }
+
+    componentDidMount() {
+        this.context.callback("player")
+    }
+
+    static contextType = NavContext
 
     state = {
         selectedPlayer: null

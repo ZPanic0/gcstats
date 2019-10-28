@@ -1,42 +1,33 @@
 import { Link } from "gatsby"
-import PropTypes from "prop-types"
-import React from "react"
+import React, { Component } from "react"
+import { Menu, Header } from "semantic-ui-react"
 
-const Header = ({ siteTitle }) => (
-  <header
-    style={{
-      background: `rebeccapurple`,
-      marginBottom: `1.45rem`,
-    }}
-  >
-    <div
-      style={{
-        margin: `0 auto`,
-        maxWidth: 960,
-        padding: `1.45rem 1.0875rem`,
-      }}
-    >
-      <h1 style={{ margin: 0 }}>
-        <Link
-          to="/"
+
+export default class SiteHeader extends Component {
+  render() {
+    return (
+      <header style={{ margin: "2rem 0 2rem 0" }}>
+        <div
           style={{
-            color: `white`,
-            textDecoration: `none`,
+            margin: `0 auto`,
+            maxWidth: 960,
+            padding: `1.45rem 1.0875rem`,
           }}
         >
-          {siteTitle}
-        </Link>
-      </h1>
-    </div>
-  </header>
-)
-
-Header.propTypes = {
-  siteTitle: PropTypes.string,
+          <Menu pointing secondary>
+            <Header className={`item${this.props.activeItem === "home" ? " active" : ""}`}>
+              <Link to="/">
+                {this.props.siteTitle}
+              </Link>
+            </Header>
+            <Menu.Menu position="right">
+              <Link to="/player/" className={`item${this.props.activeItem === "player" ? " active" : ""}`}>
+                Player Search
+                </Link>
+            </Menu.Menu>
+          </Menu>
+        </div>
+      </header>
+    )
+  }
 }
-
-Header.defaultProps = {
-  siteTitle: ``,
-}
-
-export default Header

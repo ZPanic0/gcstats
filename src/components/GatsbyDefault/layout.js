@@ -5,49 +5,52 @@
  * See: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-import React from "react"
-import PropTypes from "prop-types"
-import { useStaticQuery, graphql } from "gatsby"
-
+import React, { Component } from "react"
 import Header from "./header"
 import "semantic-ui-css/semantic.min.css"
 import "./layout.css"
 
-const Layout = ({ children }) => {
-  const data = useStaticQuery(graphql`
-    query SiteTitleQuery {
-      site {
-        siteMetadata {
-          title
-        }
-      }
-    }
-  `)
+const navContainer = { callback: null }
 
-  return (
-    <>
-      <Header siteTitle={data.site.siteMetadata.title} />
-      <div
-        style={{
-          margin: `0 auto`,
-          maxWidth: 960,
-          padding: `0px 1.0875rem 1.45rem`,
-          paddingTop: 0,
-        }}
-      >
-        <main>{children}</main>
-        <footer>
-          © {new Date().getFullYear()}, Built with
-          {` `}
-          <a href="https://www.gatsbyjs.org">Gatsby</a>
-        </footer>
-      </div>
-    </>
-  )
+const NavContext = React.createContext(navContainer)
+
+class Layout extends Component {
+  constructor(props) {
+    super(props)
+
+    this.handleNavChange = this.handleNavChange.bind(this)
+
+    navContainer.callback = this.handleNavChange
+  }
+
+  state = { activeItem: "home" }
+
+  handleNavChange(name) {
+    this.setState({ activeItem: name })
+  }
+
+  render() {
+    return (
+      <>
+        <Header siteTitle={"GCStats"} activeItem={this.state.activeItem} />
+        <div
+          style={{
+            margin: `0 auto`,
+            maxWidth: 960,
+            padding: `0px 1.0875rem 1.45rem`,
+            paddingTop: 0,
+          }}
+        >
+          <main>{this.props.children}</main>
+          <footer>
+            © {new Date().getFullYear()}, Built with
+            {` `}
+            <a href="https://www.gatsbyjs.org">Gatsby</a>
+          </footer>
+        </div>
+      </>
+    )
+  }
 }
 
-Layout.propTypes = {
-  children: PropTypes.node.isRequired,
-}
-
-export default Layout
+export { Layout as default, NavContext }

@@ -5,6 +5,9 @@ a:hover {
   color: black;
   text-decoration-line: underline;
 }
+.ui a:hover {
+  text-decoration: none;
+}
 .maelstrom-gradient, .maelstrom-gradient.card {
   background-image: linear-gradient(to right, white, #ffcccc)
 }
