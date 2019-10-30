@@ -34,18 +34,16 @@ class Layout extends Component {
       <>
         <Header siteTitle={"GCStats"} activeItem={this.state.activeItem} />
         <div
+        className="Site"
           style={{
             margin: `0 auto`,
             maxWidth: 960,
-            padding: `0px 1.0875rem 1.45rem`,
-            paddingTop: 0,
           }}
         >
-          <main>{this.props.children}</main>
+          <main className="Site-content" style={{padding: "1.5rem 0.5rem 0.5rem 0.5rem"}}>{this.props.children}</main>
           <footer>
-            © {new Date().getFullYear()}, Built with
-            {` `}
-            <a href="https://www.gatsbyjs.org">Gatsby</a>
+          {`© ${new Date().getFullYear()} `}
+          <a href="https://github.com/ZPanic0">ZPanic0</a>
           </footer>
         </div>
       </>

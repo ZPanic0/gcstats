@@ -17,3 +17,15 @@ a:hover {
 .flames-gradient, .flames-gradient.card {
   background-image: linear-gradient(to right, white, #d9d9d9)
 }
+.Site {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.Site-content {
+  flex: 1;
+}
+.default-text-family {
+  font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
+}
