@@ -35,7 +35,7 @@ export default class SiteHeader extends Component {
             <Header
               as="h1"
               className={`item${this.props.activeItem === "home" ? " active" : ""}`}
-              style={{"padding-bottom": 12, "padding-left": 12}}
+              style={{paddingBottom: 12, paddingLeft: 12}}
             >
               <Link to="/">
                 {this.props.siteTitle}
