@@ -29,3 +29,7 @@ a:hover {
 .default-text-family {
   font-family: Lato,'Helvetica Neue',Arial,Helvetica,sans-serif;
 }
+pre a,p a{
+  text-decoration-color: lightgrey;
+  text-decoration-line: underline;
+}
