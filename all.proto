@@ -1,0 +1,29 @@
+message Indexes {
+    repeated Index IndexEntries = 1;
+}
+
+message Index {
+    required int32 LodestoneId = 1;
+    required string PlayerName = 2;
+}
+
+message Players {
+    repeated Player PlayerEntries = 1;
+}
+
+message Player {
+    required int32 LodestoneId = 1;
+    required string PlayerName = 2;
+    required string PortraitUrl = 3;
+    required int32 Faction = 4;
+    required int32 FactionRank = 5;
+    required int32 Server = 6;
+    repeated Performance Performances = 7;
+}
+
+message Performance {
+    required int32 Rank = 1;
+    required int32 Score = 2;
+    required int32 Faction = 3;
+    required uint64 IndexId = 4;
+}

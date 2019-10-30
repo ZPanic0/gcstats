@@ -1,0 +1,8 @@
+message Indexes {
+    repeated Index IndexEntries = 1;
+}
+
+message Index {
+    required int32 LodestoneId = 1;
+    required string PlayerName = 2;
+}
