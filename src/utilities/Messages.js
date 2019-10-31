@@ -7,7 +7,9 @@ export default class Messages {
         if (this.messages) {
             return this.messages.lookupType(messageName)
         } else {
-            this.messages = await protobuf.load("/all.proto")
+            const subDomainModifier = process.env.GATSBY_IS_DEV ? "" : "/gcstats"
+            const path = `${subDomainModifier}/all.proto`
+            this.messages = await protobuf.load(path)
             return this.get(messageName)
         }
     }

@@ -13,7 +13,8 @@ export default class PlayerIndex {
         if (serverList) {
             return serverList
         } else {
-            const buffer = await (await fetch(`/indexes/${server}.bin`)).arrayBuffer()
+            const subDomainModifier = process.env.GATSBY_IS_DEV ? "" : "/gcstats"
+            const buffer = await (await fetch(`${subDomainModifier}/indexes/${server}.bin`)).arrayBuffer()
 
             this.data[server] = this.indexMessage.decode(new Uint8Array(buffer)).IndexEntries
 
