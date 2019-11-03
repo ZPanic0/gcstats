@@ -7,6 +7,9 @@ export default class About extends Component {
     static contextType = NavContext
 
     tools = {
+        specialThankYous: [
+            { href: "https://xivapi.com/", name: "XIVAPI", description: "A powerful REST API for FFXIV data." }
+        ],
         frontEnd: [
             { href: "https://www.gatsbyjs.org/", name: "GatsbyJS", description: "A framework for building React apps." },
             { href: "https://reactjs.org/", name: "React", description: "A Javascript UI library by Facebook." },
@@ -62,8 +65,9 @@ export default class About extends Component {
                 </p>
                 <p>The github repo can be found <a href="https://github.com/ZPanic0/gcstats">here</a>.</p>
                 <Header as="h2">
-                    Tools Used
+                    Tools and Resources
                 </Header>
+                {this.renderSection(this.tools.specialThankYous, "Special Thank You To")}
                 {this.renderSection(this.tools.frontEnd, "Site")}
                 {this.renderSection(this.tools.parser, "Parser")}
                 {this.renderSection(this.tools.miscellaneous, "Miscellaneous")}

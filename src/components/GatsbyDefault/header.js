@@ -1,6 +1,7 @@
 import { Link } from "gatsby"
 import React, { Component } from "react"
 import { Menu, Header } from "semantic-ui-react"
+import MessageBlock from "../Common/MessageBlock"
 
 export default class SiteHeader extends Component {
 
@@ -35,7 +36,7 @@ export default class SiteHeader extends Component {
             <Header
               as="h1"
               className={`item${this.props.activeItem === "home" ? " active" : ""}`}
-              style={{paddingBottom: 12, paddingLeft: 12}}
+              style={{ paddingBottom: 12, paddingLeft: 12 }}
             >
               <Link to="/">
                 {this.props.siteTitle}
@@ -45,6 +46,7 @@ export default class SiteHeader extends Component {
               {rightNav}
             </Menu.Menu>
           </Menu>
+          <MessageBlock />
         </div>
       </header>
     )
