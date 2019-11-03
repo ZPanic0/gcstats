@@ -89,7 +89,7 @@ export default class PlayerPanel extends Component {
 
     render() {
         return (
-            <Grid divided="vertically">
+            <Grid divided="vertically" key={this.props.player.LodestoneId}>
                 <Grid.Row>
                     <Grid.Column width={16} />
                 </Grid.Row>

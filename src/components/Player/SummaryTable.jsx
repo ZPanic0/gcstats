@@ -9,12 +9,9 @@ export default class SummaryTable extends Component {
         this.handleItemsPerPage = this.handleItemsPerPage.bind(this)
         this.handlePageSelect = this.handlePageSelect.bind(this)
 
-        const pages = Math.ceil(this.props.Performances.length / 10)
-
         this.state = {
             itemsPerPage: 10,
-            pages: pages,
-            currentPage: pages
+            currentPage: Math.ceil(this.props.Performances.length / 10)
         }
     }
 
@@ -53,12 +50,9 @@ export default class SummaryTable extends Component {
     }
 
     handleItemsPerPage(e, { value }) {
-        let pages = Math.max(1, Math.ceil(this.props.Performances.length / value))
-
         this.setState({
             itemsPerPage: value,
-            pages: pages,
-            currentPage: pages
+            currentPage: Math.max(1, Math.ceil(this.props.Performances.length / value))
         })
     }
 
@@ -78,13 +72,14 @@ export default class SummaryTable extends Component {
     }
 
     render() {
+        const pages = Math.max(1, Math.ceil(this.props.Performances.length / this.state.itemsPerPage))
         let displaySet
 
         if (this.state.itemsPerPage === Infinity) {
             displaySet = this.props.Performances.map(performance => this.formatPerformanceRecord(performance))
         } else {
-            const pageStart = Math.max(0, this.props.Performances.length - (this.state.itemsPerPage * (this.state.pages - this.state.currentPage + 1)))
-            const pageEnd = this.props.Performances.length - (this.state.itemsPerPage * (this.state.pages - this.state.currentPage))
+            const pageStart = Math.max(0, this.props.Performances.length - (this.state.itemsPerPage * (pages - this.state.currentPage + 1)))
+            const pageEnd = this.props.Performances.length - (this.state.itemsPerPage * (pages - this.state.currentPage))
 
             displaySet = this.props.Performances
                 .slice(pageStart, pageEnd)
@@ -119,9 +114,10 @@ export default class SummaryTable extends Component {
                                     </Menu.Item>
                                 </Menu>
                                 <PageMenu
+                                    key={this.props.lodestoneId}
                                     floated="right"
                                     selectedPage={this.state.currentPage}
-                                    pages={this.state.pages}
+                                    pages={pages}
                                     onSelect={this.handlePageSelect}
                                 />
                             </Table.HeaderCell>
