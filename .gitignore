@@ -69,4 +69,6 @@ yarn-error.log
 .yarn-integrity
 
 gcstats
-static
+static/all.proto
+static/indexes
+static/players
