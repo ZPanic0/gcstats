@@ -69,7 +69,6 @@ function SEO({ description, lang, meta, title }) {
         },
       ].concat(meta)}
     >
-      <script src="//cdn.rawgit.com/dcodeIO/protobuf.js/6.8.8/dist/protobuf.js"></script>
     </Helmet>
   )
 }
