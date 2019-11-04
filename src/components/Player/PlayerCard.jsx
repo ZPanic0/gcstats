@@ -3,8 +3,6 @@ import { Card, Image } from 'semantic-ui-react'
 import Servers from "../../utilities/Servers"
 
 export default class PlayerCard extends Component {
-    pathPrefix = process.env.GATSBY_IS_DEV ? "" : "/gcstats"
-
     getDataCenter(serverId) {
         if (isNaN(serverId) || serverId < 1 || serverId > 68) {
             throw new Error("Invalid Server Id")
@@ -57,7 +55,7 @@ export default class PlayerCard extends Component {
                         <span>{Servers[this.props.Server]} ({this.getDataCenter(this.props.Server)})</span>
                     </Card.Meta>
                     <Image
-                        src={`..${this.pathPrefix}/gc/${this.props.FactionRank - 1}.png`}
+                        src={`../gc/${this.props.FactionRank - 1}.png`}
                         size="mini"
                         floated="left"
                     />

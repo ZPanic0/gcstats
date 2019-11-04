@@ -14,8 +14,7 @@ export default class PlayerData {
         if (partition) {
             return partition.find((player) => player.LodestoneId === lodestoneId)
         } else {
-            const subDomainModifier = process.env.GATSBY_IS_DEV ? "" : "/gcstats"
-            const buffer = await (await fetch(`${subDomainModifier}/players/${partitionId}.bin`)).arrayBuffer()
+            const buffer = await (await fetch(`../players/${partitionId}.bin`)).arrayBuffer()
 
             this.data[partitionId] = this.playerMessage.decode(new Uint8Array(buffer)).PlayerEntries
 
