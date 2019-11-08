@@ -6,6 +6,16 @@ import PerformanceGraph from "./PerformanceGraph"
 import SummaryTable from "./SummaryTable"
 
 export default class PlayerPanel extends Component {
+    constructor(props) {
+        super(props)
+
+        this.handleShowEmptyWeeksToggleChange = this.handleShowEmptyWeeksToggleChange.bind(this)
+    }
+
+    state = {
+        showEmptyWeeks: false
+    }
+
     simulateLodestoneCalendar(callback) {
         const now = new Date()
         const startDate = moment("2014-01-06T00:00:00")
@@ -26,7 +36,6 @@ export default class PlayerPanel extends Component {
             callback(tallyingPeriodId, startDate.format(formatString), moment(startDate).add(6, "d").format(formatString))
         }
     }
-
 
     mapPerformanceToGraphSet(reportEmptyWeeks) {
         let performanceIterator = this.props.player.Performances.entries()
@@ -87,6 +96,10 @@ export default class PlayerPanel extends Component {
         return set
     }
 
+    handleShowEmptyWeeksToggleChange(e, { checked }) {
+        this.setState({ showEmptyWeeks: checked })
+    }
+
     render() {
         return (
             <Grid divided="vertically" key={this.props.player.LodestoneId}>
@@ -105,7 +118,10 @@ export default class PlayerPanel extends Component {
                         />
                     </Grid.Column>
                     <Grid.Column width={10}>
-                        <PerformanceGraph Performances={this.mapPerformanceToGraphSet(false)} />
+                        <PerformanceGraph
+                            Performances={this.mapPerformanceToGraphSet(this.state.showEmptyWeeks)}
+                            onShowWeeksChange={this.handleShowEmptyWeeksToggleChange}
+                            checked={this.state.showEmptyWeeks} />
                     </Grid.Column>
                 </Grid.Row>
                 <Grid.Row>
