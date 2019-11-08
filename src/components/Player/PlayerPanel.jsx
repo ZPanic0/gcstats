@@ -74,21 +74,23 @@ export default class PlayerPanel extends Component {
         thisPerformanceIteration.TallyingPeriodId = thisPerformanceIteration.value[1].IndexId / 100000 << 0
 
         this.simulateLodestoneCalendar((tallyingPeriodId, weekStart, weekEnd) => {
-            if (!thisPerformanceIteration.done) {
-                while (thisPerformanceIteration.TallyingPeriodId === tallyingPeriodId) {
-                    let thisPerformance = thisPerformanceIteration.value[1]
+            if (thisPerformanceIteration.done) { return }
 
-                    set.push({
-                        WeekStart: weekStart,
-                        WeekEnd: weekEnd,
-                        IndexId: thisPerformance.IndexId,
-                        Score: thisPerformance.Score,
-                        Rank: thisPerformance.Rank,
-                        Faction: thisPerformance.Faction
-                    })
+            while (thisPerformanceIteration.TallyingPeriodId === tallyingPeriodId) {
+                let thisPerformance = thisPerformanceIteration.value[1]
 
-                    thisPerformanceIteration = performanceIterator.next()
-                    thisPerformanceIteration.TallyingPeriodId = thisPerformance.IndexId / 100000 << 0
+                set.push({
+                    WeekStart: weekStart,
+                    WeekEnd: weekEnd,
+                    IndexId: thisPerformance.IndexId,
+                    Score: thisPerformance.Score,
+                    Rank: thisPerformance.Rank,
+                    Faction: thisPerformance.Faction
+                })
+
+                thisPerformanceIteration = performanceIterator.next()
+                if (!thisPerformanceIteration.done) {
+                    thisPerformanceIteration.TallyingPeriodId = thisPerformanceIteration.value[1].IndexId / 100000 << 0
                 }
             }
         })
