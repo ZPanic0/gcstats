@@ -68,7 +68,7 @@ export default class SearchBar extends Component {
           players={this.state.playerSearchResults}
           value={this.state.selectedLodestoneId}
           loading={this.state.playerListIsLoading}
-          disabled={!this.state.selectedServer || this.state.playerListIsLoading}
+          disabled={this.state.playerListIsLoading}
         />
       </div>
     )
