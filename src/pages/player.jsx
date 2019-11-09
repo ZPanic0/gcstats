@@ -43,7 +43,11 @@ export default class PlayerPage extends Component {
     handleSearchSelection(selectedLodestoneId) {
         new PlayerData()
             .GetPlayer(selectedLodestoneId)
-            .then((selectedPlayer) => this.setState({ selectedPlayer }))
+            .then(selectedPlayer => {
+                window.history.pushState(null, "", `${this.props.location.href}?id=${selectedPlayer.LodestoneId}`)
+
+                this.setState({ selectedPlayer })
+            })
     }
 
     render() {
