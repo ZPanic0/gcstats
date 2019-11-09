@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Card, Image } from 'semantic-ui-react'
+import { Card, Image, Icon, Popup } from 'semantic-ui-react'
 import Servers from "../../utilities/Servers"
 
 export default class PlayerCard extends Component {
@@ -43,17 +43,39 @@ export default class PlayerCard extends Component {
                 return ""
         }
     }
+
+    onClipboardCopyClick() {
+        window.navigator.clipboard.writeText(`${window.location.href}`)
+    }
+
     render() {
         return (
             <Card className={this.getFactionStyles()}>
                 <Card.Content>
-                    <Image src={`https://img2.finalfantasyxiv.com/${this.props.PortraitUrl}`} size="tiny" floated="left" />
+                    <Image src={`https://img2.finalfantasyxiv.com/${this.props.PortraitUrl}`} size="tiny" floated="left" rounded />
                     <Card.Header>
-                        <a href={`https://na.finalfantasyxiv.com/lodestone/character/${this.props.LodestoneId}/`}>{this.props.PlayerName}</a>
+                        <a
+                            title="Go to player lodestone page"
+                            href={`https://na.finalfantasyxiv.com/lodestone/character/${this.props.LodestoneId}/`}>
+                            {this.props.PlayerName}
+                        </a>
                     </Card.Header>
                     <Card.Meta>
                         <span>{Servers[this.props.Server]} ({this.getDataCenter(this.props.Server)})</span>
                     </Card.Meta>
+                    <Popup
+                        content="Copied!"
+                        on="click"
+                        trigger={<Icon
+                            style={{ paddingTop: "2px" }}
+                            link
+                            name="linkify"
+                            title="Copy page to clipboard"
+                            onClick={this.onClipboardCopyClick}
+                        />}
+                    />
+                </Card.Content>
+                <Card.Content extra style={{ paddingTop: "0", paddingBottom: "0" }}>
                     <Image
                         src={`../gc/${this.props.FactionRank - 1}.png`}
                         size="mini"
