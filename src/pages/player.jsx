@@ -44,10 +44,20 @@ export default class PlayerPage extends Component {
         new PlayerData()
             .GetPlayer(selectedLodestoneId)
             .then(selectedPlayer => {
-                window.history.pushState(null, "", `${this.props.location.href}?id=${selectedPlayer.LodestoneId}`)
+                this.updateUrlWithQueryString(selectedPlayer.LodestoneId)
 
                 this.setState({ selectedPlayer })
             })
+    }
+
+    updateUrlWithQueryString(lodestoneId) {
+        console.log(this.props.location)
+
+        const url = this.props.location.search 
+        ? `${this.props.location.origin}${this.props.location.pathname}?id=${lodestoneId}`
+        : `${this.props.location.href}?id=${lodestoneId}`
+
+        window.history.pushState(null, "", url)
     }
 
     render() {
