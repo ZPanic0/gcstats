@@ -51,8 +51,6 @@ export default class PlayerPage extends Component {
     }
 
     updateUrlWithQueryString(lodestoneId) {
-        console.log(this.props.location)
-
         const url = this.props.location.search 
         ? `${this.props.location.origin}${this.props.location.pathname}?id=${lodestoneId}`
         : `${this.props.location.href}?id=${lodestoneId}`
