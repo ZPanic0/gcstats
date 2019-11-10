@@ -19,9 +19,13 @@ a:hover {
 }
 .player-card > .corner {
   border-color: transparent !important;
+  cursor: default !important
 }
 .player-card > .content {
-  border-top: 0 !important;
+  border-top: 0 !important
+}
+.player-card > .corner > i {
+  cursor: pointer !important
 }
 .Site {
   display: flex;
