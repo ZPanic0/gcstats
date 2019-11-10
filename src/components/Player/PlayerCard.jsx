@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Card, Image, Icon, Popup } from 'semantic-ui-react'
+import { Card, Image, Popup, Label } from 'semantic-ui-react'
 import Servers from "../../utilities/Servers"
 
 export default class PlayerCard extends Component {
@@ -54,8 +54,21 @@ export default class PlayerCard extends Component {
             : "https://img.finalfantasyxiv.com/lds/h/z/6PLTZ82M99GJ7tKOee1RSwvNrQ.png"
 
         return (
-            <Card className={this.getFactionStyles()}>
-                <Card.Content>
+            <Card className={`player-card ${this.getFactionStyles()}`}>
+                <Popup
+                    content="Link copied to clipboard!"
+                    on="click"
+                    position='top center'
+                    offset="10"
+                    trigger={
+                        <Label
+                            as='a'
+                            corner='right'
+                            icon='linkify'
+                            onClick={this.onClipboardCopyClick}
+                        />}
+                />
+                <Card.Content className="no-border-top">
                     <Image src={avatarUrl} size="tiny" floated="left" rounded />
                     <Card.Header>
                         <a
@@ -67,17 +80,6 @@ export default class PlayerCard extends Component {
                     <Card.Meta>
                         <span>{Servers[this.props.Server]} ({this.getDataCenter(this.props.Server)})</span>
                     </Card.Meta>
-                    <Popup
-                        content="Copied!"
-                        on="click"
-                        trigger={<Icon
-                            style={{ paddingTop: "2px" }}
-                            link
-                            name="linkify"
-                            title="Copy page to clipboard"
-                            onClick={this.onClipboardCopyClick}
-                        />}
-                    />
                 </Card.Content>
                 <Card.Content extra style={{ paddingTop: "0", paddingBottom: "0" }}>
                     <Image

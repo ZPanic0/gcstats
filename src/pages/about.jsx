@@ -31,7 +31,8 @@ export default class About extends Component {
             { href: "https://na.finalfantasyxiv.com/lodestone/", name: "The Lodestone", description: "The official community hub for Final Fantasy XIV and from where the information on this site is derived." },
             { href: "https://git-scm.com/", name: "Git", description: "A version control system." },
             { href: "https://code.visualstudio.com/", name: "Visual Studio Code", description: "A cross platform code editor by Microsoft." },
-            { href: "https://visualstudio.microsoft.com/vs/", name: "Visual Studio", description: "A full IDE by Microsoft." }
+            { href: "https://visualstudio.microsoft.com/vs/", name: "Visual Studio", description: "A full IDE by Microsoft." },
+            { href: "https://regex101.com/", name: "Regular Expressions 101", description: "A browser based regex testing tool."}
         ]
     }
 
