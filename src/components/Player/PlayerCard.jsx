@@ -49,10 +49,14 @@ export default class PlayerCard extends Component {
     }
 
     render() {
+        const avatarUrl = this.props.PortraitUrl
+            ? `https://img2.finalfantasyxiv.com/f/${this.props.PortraitUrl}_96x96.jpg`
+            : "https://img.finalfantasyxiv.com/lds/h/z/6PLTZ82M99GJ7tKOee1RSwvNrQ.png"
+
         return (
             <Card className={this.getFactionStyles()}>
                 <Card.Content>
-                    <Image src={`https://img2.finalfantasyxiv.com/${this.props.PortraitUrl}`} size="tiny" floated="left" rounded />
+                    <Image src={avatarUrl} size="tiny" floated="left" rounded />
                     <Card.Header>
                         <a
                             title="Go to player lodestone page"
