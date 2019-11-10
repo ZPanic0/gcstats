@@ -45,7 +45,7 @@ namespace gcstats.Queries
             private readonly HtmlDocument document;
             private static readonly Regex factionAndRankNameRegex = new Regex("[A-z ]+");
             private static readonly Regex serverAndDatacenterRegex = new Regex("[A-z]+");
-            private static readonly Regex portraitUrlRegex = new Regex(@"(?:https:\/\/img2?\.finalfantasyxiv.com\/)(?<core>.*[(\.png)(\.jpg)])(.*)?");
+            private static readonly Regex portraitUrlRegex = new Regex(@"\/([A-z0-9]{68})");
             private static readonly Regex lodestoneIdRegex = new Regex("[0-9]+");
 
             public Handler(Paths pathSettings, HtmlDocument document)
@@ -77,7 +77,7 @@ namespace gcstats.Queries
                 return new Result
                 {
                     Rank = int.Parse(row.SelectSingleNode(pathSettings.Rank).InnerText),
-                    PortraitUrl = portraitUrlRegex.Match(row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value).Groups["core"].Value,
+                    PortraitUrl = portraitUrlRegex.Match(row.SelectSingleNode(pathSettings.PortraitUrl).Attributes["src"].Value).Groups[1].Value,
                     PlayerName = playerName,
                     Server = Enum.Parse<Server>(serverAndDatacenterMatch.First().Value),
                     TargetFaction = targetFaction,
