@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Card, Image, Popup, Label } from 'semantic-ui-react'
+import { Card, Image } from 'semantic-ui-react'
 import Servers from "../../utilities/Servers"
 
 export default class PlayerCard extends Component {
@@ -44,10 +44,6 @@ export default class PlayerCard extends Component {
         }
     }
 
-    onClipboardCopyClick() {
-        window.navigator.clipboard.writeText(`${window.location.href}`)
-    }
-
     render() {
         const avatarUrl = this.props.PortraitUrl
             ? `https://img2.finalfantasyxiv.com/f/${this.props.PortraitUrl}_96x96.jpg`
@@ -55,19 +51,7 @@ export default class PlayerCard extends Component {
 
         return (
             <Card className={`player-card ${this.getFactionStyles()}`}>
-                <Popup
-                    content="Link copied to clipboard!"
-                    on="click"
-                    position='top center'
-                    offset="10"
-                    trigger={
-                        <Label
-                            as='a'
-                            corner='right'
-                            icon='linkify'
-                            onClick={this.onClipboardCopyClick}
-                        />}
-                />
+                {this.props.corner}
                 <Card.Content className="no-border-top">
                     <Image src={avatarUrl} size="tiny" floated="left" rounded />
                     <Card.Header>

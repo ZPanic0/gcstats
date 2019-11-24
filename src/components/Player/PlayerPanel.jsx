@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Grid } from "semantic-ui-react"
+import { Grid, Popup, Label } from "semantic-ui-react"
 import PlayerCard from "./PlayerCard"
 import PerformanceGraph from "./PerformanceGraph"
 import SummaryTable from "./SummaryTable"
@@ -23,6 +23,20 @@ export default class PlayerPanel extends Component {
     render() {
         const calendar = new LodestoneCalendar(this.props.player.Performances)
 
+        const corner = <Popup
+            content="Link copied to clipboard!"
+            on="click"
+            position='top center'
+            offset="10"
+            trigger={
+                <Label
+                    as='a'
+                    corner='right'
+                    icon='linkify'
+                    onClick={() => window.navigator.clipboard.writeText(`${window.location.href}`)}
+                />}
+        />
+
         return (
             <Grid divided="vertically" key={this.props.player.LodestoneId}>
                 <Grid.Row>
@@ -31,7 +45,7 @@ export default class PlayerPanel extends Component {
                 <Grid.Row>
                     <Grid.Column width={6}>
                         <PlayerCard
-
+                            corner={corner}
                             PlayerName={this.props.player.PlayerName}
                             PortraitUrl={this.props.player.PortraitUrl}
                             LodestoneId={this.props.player.LodestoneId}
