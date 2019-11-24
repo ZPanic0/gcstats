@@ -8,13 +8,13 @@ a:hover {
 .ui a:hover {
   text-decoration: none;
 }
-.maelstrom-gradient, .maelstrom-gradient.card {
+.maelstrom-gradient, .maelstrom-gradient.card, .row .cards .maelstrom-gradient {
   background-image: linear-gradient(to right, white, #ffcccc)
 }
-.adder-gradient, .adder-gradient.card {
+.adder-gradient, .adder-gradient.card, .row .cards .adder-gradient {
   background-image: linear-gradient(to right, white, #ffffcc)
 }
-.flames-gradient, .flames-gradient.card {
+.flames-gradient, .flames-gradient.card, .row .cards .flames-gradient {
   background-image: linear-gradient(to right, white, #d9d9d9)
 }
 .player-card > .corner {
