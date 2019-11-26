@@ -5,6 +5,7 @@ export default class PlayerSearch extends Component {
     render() {
         return (
             <Dropdown
+                selectOnNavigation={false}
                 onSearchChange={this.props.handleSearchChange}
                 onChange={this.props.handleChange}
                 options={this.props.players}

@@ -14,6 +14,7 @@ export default class ServerSearch extends Component {
     render() {
         return (
             <Dropdown
+                selectOnNavigation={false}
                 onChange={this.props.handleChange}
                 options={this.servers}
                 placeholder="Select Server..."

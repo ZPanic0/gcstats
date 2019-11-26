@@ -43,3 +43,6 @@ pre a,p a{
   text-decoration-color: lightgrey;
   text-decoration-line: underline;
 }
+.selected.item span.text:after {
+  content: ' <';
+}
