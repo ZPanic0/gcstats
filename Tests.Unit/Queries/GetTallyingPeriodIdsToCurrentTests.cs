@@ -1,5 +1,4 @@
-﻿using CQRS.Queries;
-using FluentAssertions;
+﻿using FluentAssertions;
 using MediatR;
 using Moq;
 using System;
@@ -8,6 +7,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Handler = CQRS.Queries.GetTallyingPeriodIdsToCurrent.Handler;
+using Request = CQRS.Queries.GetTallyingPeriodIdsToCurrent.Request;
 
 namespace Tests.Unit.Queries
 {
@@ -21,8 +22,9 @@ namespace Tests.Unit.Queries
             mediatorMock
                 .Setup(x => x.Send(It.IsAny<IRequest<int>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(latestId);
-            (await new GetTallyingPeriodIdsToCurrent.Handler(mediatorMock.Object)
-                .Handle(new GetTallyingPeriodIdsToCurrent.Request(DateTime.Now), CancellationToken.None))
+
+            (await new Handler(mediatorMock.Object)
+                .Handle(new Request(DateTime.Now), CancellationToken.None))
                 .Should()
                 .BeEquivalentTo(expectedIds);
         }

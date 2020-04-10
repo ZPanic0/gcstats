@@ -1,11 +1,12 @@
 ﻿using FluentAssertions;
-using CQRS.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Handler = CQRS.Queries.GetLastWeekTallyingPeriodId.Handler;
+using Request = CQRS.Queries.GetLastWeekTallyingPeriodId.Request;
 
 namespace Tests.Unit.Queries
 {
@@ -15,8 +16,8 @@ namespace Tests.Unit.Queries
         [MemberData(nameof(TestData))]
         public async Task ReturnsExpectedId(DateTime now, int expectedId)
         {
-            (await new GetLastWeekTallyingPeriodId.Handler()
-                .Handle(new GetLastWeekTallyingPeriodId.Request(now), CancellationToken.None))
+            (await new Handler()
+                .Handle(new Request(now), CancellationToken.None))
                 .Should()
                 .Be(expectedId);
         }

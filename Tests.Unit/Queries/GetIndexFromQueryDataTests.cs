@@ -1,11 +1,11 @@
-﻿using System.Threading.Tasks;
-using Xunit;
-using Request = CQRS.Queries.GetIndexFromQueryData.Request;
-using Handler = CQRS.Queries.GetIndexFromQueryData.Handler;
-using System.Threading;
+﻿using Common.Enums;
 using FluentAssertions;
 using System.Collections.Generic;
-using Common.Enums;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+using Handler = CQRS.Queries.GetIndexFromQueryData.Handler;
+using Request = CQRS.Queries.GetIndexFromQueryData.Request;
 
 namespace Tests.Unit.Queries
 {
