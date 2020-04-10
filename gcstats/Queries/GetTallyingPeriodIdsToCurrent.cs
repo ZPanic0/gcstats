@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using CQRS.Queries;
+using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -24,7 +25,7 @@ namespace gcstats.Queries
             public async Task<IEnumerable<int>> Handle(Request request, CancellationToken cancellationToken)
             {
                 var tallyingPeriodIds = Enumerable.Empty<int>();
-                var lastTallyingPeriodId = await mediator.Send(new GetLastWeekTallyingPeriodId.Request());
+                var lastTallyingPeriodId = await mediator.Send(new GetLastWeekTallyingPeriodId.Request(DateTime.Now));
                 var lastTallyingPeriodYear = lastTallyingPeriodId / 100;
 
                 for (var year = 2014; year < lastTallyingPeriodYear; year++)
