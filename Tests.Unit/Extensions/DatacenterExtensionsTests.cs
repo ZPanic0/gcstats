@@ -1,6 +1,7 @@
 ﻿using Common.Enums;
 using Common.Extensions;
 using FluentAssertions;
+using System;
 using System.Collections.Generic;
 using Xunit;
 
@@ -12,7 +13,18 @@ namespace Tests.Unit.Extensions
         [MemberData(nameof(TestData))]
         public void EmitsExpectedServers(Datacenter datacenter, Server[] expectedServers)
         {
-            datacenter.GetServers().Should().BeEquivalentTo(expectedServers);
+            datacenter
+                .GetServers()
+                .Should()
+                .BeEquivalentTo(expectedServers);
+        }
+
+        [Fact]
+        public void ThrowsOnNoInput()
+        {
+            Datacenter.NoInput
+                .Invoking(datacenter => datacenter.GetServers())
+                .Should().Throw<ArgumentException>();
         }
 
         public static IEnumerable<object[]> TestData() => new object[][] {
