@@ -1,5 +1,4 @@
-﻿using gcstats.Queries;
-using MediatR;
+﻿using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

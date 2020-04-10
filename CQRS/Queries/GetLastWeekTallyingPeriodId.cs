@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace gcstats.Queries
+namespace CQRS.Queries
 {
     public static class GetLastWeekTallyingPeriodId
     {
