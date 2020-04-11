@@ -18,11 +18,12 @@ namespace Tests.Unit.Queries
         {
             var mediatorMock = new Mock<IMediator>();
             var sets = new Sets();
+            var inputId = 1;
             var expectedCallCount = sets.Servers.All.Count() * sets.Factions.Count() * sets.PageNumbers.Count();
 
             mediatorMock
                 .Setup(mediator => mediator.Send(It.IsAny<IRequest<long>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(1);
+                .ReturnsAsync(inputId);
 
             var results = (await new Handler(mediatorMock.Object, sets)
                 .Handle(new Request(1), CancellationToken.None))
@@ -31,6 +32,11 @@ namespace Tests.Unit.Queries
             mediatorMock
                 .Verify(mediator => mediator.Send(It.IsAny<IRequest<long>>(), It.IsAny<CancellationToken>()),
                     Times.Exactly(expectedCallCount));
+
+            results
+                .All(id => id == inputId)
+                .Should()
+                .BeTrue();
 
             results.Count
                 .Should()
