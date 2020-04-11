@@ -17,20 +17,24 @@ namespace Tests.Unit.Queries
         public async Task EmitsExpectedIds()
         {
             var mediatorMock = new Mock<IMediator>();
+            var sets = new Sets();
+            var expectedCallCount = sets.Servers.All.Count() * sets.Factions.Count() * sets.PageNumbers.Count();
 
             mediatorMock
                 .Setup(mediator => mediator.Send(It.IsAny<IRequest<long>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
 
-            var sets = new Sets();
-
             var results = (await new Handler(mediatorMock.Object, sets)
                 .Handle(new Request(1), CancellationToken.None))
                 .ToList();
 
+            mediatorMock
+                .Verify(mediator => mediator.Send(It.IsAny<IRequest<long>>(), It.IsAny<CancellationToken>()),
+                    Times.Exactly(expectedCallCount));
+
             results.Count
                 .Should()
-                .Be(sets.Servers.All.Count() * sets.Factions.Count() * sets.PageNumbers.Count());
+                .Be(expectedCallCount);
         }
     }
 }
